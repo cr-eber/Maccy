@@ -55,11 +55,13 @@ struct HistoryItemView: View {
       selectionAppearance: selectionAppearance,
       stripeIndex: index,
       isPinnedRow: item.isPinned,
-      onPinToggle: {
-        withAnimation {
-          appState.history.togglePin(item)
+      onPinToggle: item.isPinned
+        ? {
+          withAnimation {
+            appState.history.togglePin(item)
+          }
         }
-      },
+        : nil,
       accessibilityLabel: item.accessibilityLabel
     ) {
       Text(verbatim: item.title)

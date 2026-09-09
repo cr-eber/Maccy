@@ -80,6 +80,15 @@ struct ToolbarView: View {
     case itemOptions
   }
 
+  private var shouldUnpin: Bool {
+    return appState.navigator.selection.items.allSatisfy { $0.isPinned }
+  }
+
+  private var pinActionDisabled: Bool {
+    return appState.navigator.selection.items.contains { $0.isPinned }
+      && appState.navigator.selection.items.contains { !$0.isPinned }
+  }
+
   private var selectedImageItem: HistoryItemDecorator? {
     guard appState.navigator.selection.count == 1,
           let item = appState.navigator.selection.first,
@@ -127,6 +136,25 @@ struct ToolbarView: View {
           }
           .shortcutKeyHelp(key: "ScanQRCode", tableName: "PreviewItemView")
         }
+
+        ToolbarButton {
+          withAnimation {
+            appState.togglePin()
+          }
+        } label: {
+          if (appState.navigator.selection.items.allSatisfy { $0.isPinned }) {
+            Image(systemName: "pin.slash")
+          } else {
+            Image(systemName: "pin")
+          }
+        }
+        .shortcutKeyHelp(
+          name: .pin,
+          key: shouldUnpin ? "UnpinKey" : "PinKey",
+          tableName: "PreviewItemView",
+          replacementKey: "pinKey"
+        )
+        .disabled(pinActionDisabled)
 
         ToolbarButton {
           appState.deleteSelection()
