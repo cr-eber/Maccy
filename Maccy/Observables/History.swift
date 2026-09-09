@@ -462,6 +462,11 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
     item.togglePin()
 
+    // An unpinned item surfaces at the top, like a fresh copy.
+    if item.isUnpinned {
+      item.item.lastCopiedAt = Date.now
+    }
+
     let sortedItems = sorter.sort(all.map(\.item))
     if let currentIndex = all.firstIndex(of: item),
        let newIndex = sortedItems.firstIndex(of: item.item) {

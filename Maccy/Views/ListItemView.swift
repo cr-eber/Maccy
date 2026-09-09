@@ -45,6 +45,8 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   var stripeIndex: Int?
   // Pinned rows are one line tall with a light yellow tint.
   var isPinnedRow: Bool = false
+  // When set, a pin icon leads the row and toggles pinning on click.
+  var onPinToggle: (() -> Void)?
   // Complete description used when the row's visual content is hidden from accessibility.
   var accessibilityLabel: String = ""
   @ViewBuilder var title: () -> Title
@@ -92,6 +94,21 @@ struct ListItemView<Title: View, ID: Hashable>: View {
 
   var body: some View {
     HStack(alignment: .top, spacing: 0) {
+      if let onPinToggle {
+        Button(action: onPinToggle) {
+          Image(systemName: isPinnedRow ? "pin.fill" : "pin")
+            .font(.system(size: 11))
+            .foregroundStyle(isPinnedRow ? Color.orange : Color.secondary.opacity(0.4))
+            .frame(width: 15, height: 15)
+        }
+        .buttonStyle(.plain)
+        .padding(.leading, 4)
+        .padding(.top, Popup.itemVerticalInset + 1)
+        .accessibilityLabel(
+          Text(isPinnedRow ? "history_item_unpin_action" : "history_item_pin_action")
+        )
+      }
+
       if showIcons, let appIcon {
         AppImageView(appImage: appIcon, size: NSSize(width: 15, height: 15))
           .padding(.leading, 4)
