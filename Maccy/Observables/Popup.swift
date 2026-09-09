@@ -93,7 +93,8 @@ class Popup {
   }
 
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
-    AppState.shared.appDelegate?.panel.open(height: height, at: popupPosition)
+    // The popup always opens at its configured maximum height.
+    AppState.shared.appDelegate?.panel.open(height: Defaults[.windowSize].height, at: popupPosition)
   }
 
   func reset() {
@@ -110,18 +111,9 @@ class Popup {
   }
 
   func preferredHeight(for newHeight: CGFloat) -> CGFloat {
-    var height = newHeight
-
-    var minHeight = self.minimumHeight
-    // If the preview is non-empty make sure the window accomodates for it to be visible.
-    if AppState.shared.preview.state.isOpen && AppState.shared.navigator.leadSelection != nil {
-      minHeight = max(minHeight, Self.minimumPreviewHeight)
-    }
-    minHeight = max(headerHeight + Self.verticalPadding, minHeight)
-
-    height = max(height, minHeight)
-    height = min(height, Defaults[.windowSize].height)
-    return height
+    // Keep the popup at its configured maximum height instead of
+    // collapsing to fit the (possibly filtered) list content.
+    return Defaults[.windowSize].height
   }
 
   private func suitableHeight(for historyListHeight: CGFloat) -> CGFloat {

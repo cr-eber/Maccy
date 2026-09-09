@@ -68,7 +68,9 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   }
 
   private var selectionNSColor: NSColor {
-    NSColor(hexString: selectionColor) ?? .controlAccentColor
+    let base = NSColor(hexString: selectionColor) ?? .controlAccentColor
+    // Render the selection 10% lighter than the configured color.
+    return base.blended(withFraction: 0.1, of: .white) ?? base
   }
 
   // Black text on light selection colors, white text on dark ones.
@@ -157,10 +159,9 @@ struct ListItemView<Title: View, ID: Hashable>: View {
     .frame(maxWidth: .infinity, alignment: .leading)
     .foregroundStyle(isSelected ? selectedForeground : .primary)
     .background {
-      // Selection keeps rounded corners; the zebra stripe stays square.
+      // Both the selection and the zebra stripe are square, full-row fills.
       if isSelected {
-        selectionAppearance.rect(cornerRadius: Popup.cornerRadius)
-          .fill(Color(nsColor: selectionNSColor))
+        Color(nsColor: selectionNSColor)
       } else {
         stripeColor
       }

@@ -3,7 +3,8 @@ import SwiftHEXColors
 
 class ColorImage {
   static func from(_ colorHex: String) -> NSImage? {
-    guard let color = NSColor(hexString: colorHex) else {
+    // Only treat values explicitly written as hex colors (#RRGGBB) as colors.
+    guard colorHex.hasPrefix("#"), let color = NSColor(hexString: colorHex) else {
       return nil
     }
 
