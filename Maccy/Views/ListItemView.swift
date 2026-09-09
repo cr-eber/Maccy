@@ -40,6 +40,8 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   var selectionIndex: Int?
   var help: LocalizedStringKey?
   var selectionAppearance: SelectionAppearance = .none
+  // Row index used for the alternating (zebra) background; nil disables striping.
+  var stripeIndex: Int?
   // Complete description used when the row's visual content is hidden from accessibility.
   var accessibilityLabel: String = ""
   @ViewBuilder var title: () -> Title
@@ -51,6 +53,18 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   // Use the same selection number for the visible badge and accessibility value.
   private var displaySelectionIndex: String? {
     selectionIndex.map { "\($0 + 1)" }
+  }
+
+  private var backgroundColor: Color {
+    if isSelected {
+      return Color.accentColor.opacity(0.8)
+    }
+    if let stripeIndex, !stripeIndex.isMultiple(of: 2) {
+      return Color.primary.opacity(0.05)
+    }
+    // macOS 26 broke hovering if no background is present.
+    // The slight opacity white background is a workaround
+    return Color.white.opacity(0.001)
   }
 
   var body: some View {
@@ -122,9 +136,7 @@ struct ListItemView<Title: View, ID: Hashable>: View {
     .id(id)
     .frame(maxWidth: .infinity, alignment: .leading)
     .foregroundStyle(isSelected ? Color.white : .primary)
-    // macOS 26 broke hovering if no background is present.
-    // The slight opcaity white background is a workaround
-    .background(isSelected ? Color.accentColor.opacity(0.8) : .white.opacity(0.001))
+    .background(backgroundColor)
     .clipShape(selectionAppearance.rect(cornerRadius: Popup.cornerRadius))
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(Text(accessibilityLabel))

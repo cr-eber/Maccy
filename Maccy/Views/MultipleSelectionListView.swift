@@ -11,6 +11,14 @@ struct MultipleSelectionListView<Element, ID, Content>: View
         let previous = index > 0 ? items[index - 1] : nil
         let next = index < items.count - 1 ? items[index + 1] : nil
         content(previous, element, next, index)
+
+        if next != nil {
+          Rectangle()
+            .fill(Color.primary.opacity(0.08))
+            .frame(height: 1)
+            .padding(.horizontal, Popup.horizontalSeparatorPadding)
+            .padding(.vertical, 1)
+        }
       }
     }
   }

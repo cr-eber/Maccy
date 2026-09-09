@@ -109,6 +109,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     migrateUserDefaults()
     disableUnusedGlobalHotkeys()
 
+    Task {
+      for await mode in Defaults.updates(.appearanceMode) {
+        NSApp.appearance = mode.appearance
+      }
+    }
+
     panel = FloatingPanel(
       contentRect: NSRect(origin: .zero, size: Defaults[.windowSize]),
       identifier: Bundle.main.bundleIdentifier ?? "org.p0deje.Maccy",

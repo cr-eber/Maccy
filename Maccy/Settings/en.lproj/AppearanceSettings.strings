@@ -1,4 +1,9 @@
 "Title" = "Appearance";
+"AppearanceMode" = "Theme:";
+"AppearanceModeSystem" = "System";
+"AppearanceModeLight" = "Light";
+"AppearanceModeDark" = "Dark";
+"AppearanceModeTooltip" = "Force light or dark appearance, or follow the system setting.\nDefault: System.";
 "PopupAt" = "Popup at:";
 "PopupAtCursor" = "Cursor";
 "PopupAtMenuBarIcon" = "Menu icon";

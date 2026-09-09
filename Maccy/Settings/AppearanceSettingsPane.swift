@@ -4,6 +4,7 @@ import Defaults
 import Settings
 
 struct AppearanceSettingsPane: View {
+  @Default(.appearanceMode) private var appearanceMode
   @Default(.popupPosition) private var popupAt
   @Default(.popupScreen) private var popupScreen
   @Default(.pinTo) private var pinTo
@@ -51,6 +52,18 @@ struct AppearanceSettingsPane: View {
 
   var body: some View {
     Settings.Container(contentWidth: 650) {
+      Settings.Section(label: { Text("AppearanceMode", tableName: "AppearanceSettings") }) {
+        Picker("", selection: $appearanceMode) {
+          ForEach(AppearanceMode.allCases) { mode in
+            Text(mode.description)
+          }
+        }
+        .labelsHidden()
+        .frame(width: 180)
+        .help(Text("AppearanceModeTooltip", tableName: "AppearanceSettings"))
+        .accessibilityLabel(Text("AppearanceMode", tableName: "AppearanceSettings"))
+      }
+
       Settings.Section(label: { Text("PopupAt", tableName: "AppearanceSettings") }) {
         HStack {
           Picker("", selection: $popupAt) {
