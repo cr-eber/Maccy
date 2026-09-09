@@ -219,6 +219,12 @@ class Clipboard {
 
     let historyItem = HistoryItem(contents: contents)
 
+    // Ignore copies that consist only of whitespace (spaces, tabs, newlines).
+    if historyItem.image == nil, historyItem.fileURLs.isEmpty,
+       historyItem.previewableText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+      return
+    }
+
     if #unavailable(macOS 15.0) {
       // On macOS 14 the history item needs to be inserted into storage directly after creating it.
       try? History.shared.insertIntoStorage(historyItem)

@@ -123,11 +123,28 @@ struct ToolbarView: View {
     }
   }
 
-  var body: some View {
-    HStack {
-      if !appState.navigator.selection.isEmpty {
-        Spacer()
+  // Single selected text item that can be masked.
+  private var selectedMaskableItem: HistoryItemDecorator? {
+    guard appState.navigator.selection.count == 1,
+          let item = appState.navigator.selection.first,
+          !item.hasImage else {
+      return nil
+    }
 
+    return item
+  }
+
+  var body: some View {
+    // Keep the buttons in the corner next to the popup content:
+    // right corner when the preview slides out right, left corner otherwise.
+    let alignLeft = appState.preview.placement == .left
+
+    HStack {
+      if !alignLeft && !appState.navigator.selection.isEmpty {
+        Spacer()
+      }
+
+      if !appState.navigator.selection.isEmpty {
         if selectedImageItem != nil {
           ToolbarButton {
             scanQRCode()
@@ -135,6 +152,22 @@ struct ToolbarView: View {
             Image(systemName: "qrcode.viewfinder")
           }
           .shortcutKeyHelp(key: "ScanQRCode", tableName: "PreviewItemView")
+        }
+
+        if let maskItem = selectedMaskableItem {
+          ToolbarButton {
+            maskItem.toggleMask()
+            // Re-run an active search so masked titles re-render highlighted.
+            if !appState.history.searchQuery.isEmpty {
+              appState.history.searchQuery = appState.history.searchQuery
+            }
+          } label: {
+            Image(systemName: maskItem.isMasked ? "eye" : "eye.slash")
+          }
+          .shortcutKeyHelp(
+            key: maskItem.isMasked ? "UnmaskItem" : "MaskItem",
+            tableName: "PreviewItemView"
+          )
         }
 
         ToolbarButton {
@@ -176,6 +209,10 @@ struct ToolbarView: View {
           Image(systemName: "stop")
         }
         .accessibilityLabel(Text("toolbar_remove_paste_stack_action"))
+      }
+
+      if alignLeft {
+        Spacer()
       }
     }
   }

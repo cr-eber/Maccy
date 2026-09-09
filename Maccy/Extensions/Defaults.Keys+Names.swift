@@ -33,6 +33,8 @@ extension Defaults.Keys {
   static let appearanceMode = Key<AppearanceMode>("appearanceMode", default: .system, suite: preferencesSuite)
   static let backgroundOpacity = Key<Double>("backgroundOpacity", default: 1.0, suite: preferencesSuite)
   static let itemGap = Key<Double>("itemGap", default: 10, suite: preferencesSuite)
+  static let maskPrefixLength = Key<Int>("maskPrefixLength", default: 4, suite: preferencesSuite)
+  static let maskSuffixLength = Key<Int>("maskSuffixLength", default: 3, suite: preferencesSuite)
   static let previewPinned = Key<Bool>("previewPinned", default: true, suite: preferencesSuite)
   static let selectionColor = Key<String>("selectionColor", default: "#CCCACD", suite: preferencesSuite)
   static let maxItemLines = Key<Int>("maxItemLines", default: 3, suite: preferencesSuite)

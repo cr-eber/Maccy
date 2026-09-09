@@ -55,60 +55,31 @@ struct PreviewItemView: View {
           }
         }
       } else {
-        let text = item.previewText
+        let realText = item.previewText
+        let text = item.isMasked ? HistoryItemDecorator.mask(realText) : realText
         let query = AppState.shared.history.searchQuery
         if text.count >= Self.largeTextThreshold {
-          LargeTextPreviewView(text: text, query: query)
-            .id("textpreview-\(item.id)")
+          LargeTextPreviewView(
+            text: text,
+            query: query,
+            searchSource: item.isMasked ? realText : nil
+          )
+          .id("textpreview-\(item.id)")
         } else {
           ScrollView {
-            Text(HistoryItemDecorator.highlightAll(of: query, in: text))
-              .font(.body)
-              .frame(maxWidth: .infinity, alignment: .leading)
+            Text(
+              HistoryItemDecorator.highlightAll(
+                of: query, in: text, searching: item.isMasked ? realText : nil
+              )
+            )
+            .font(.body)
+            .frame(maxWidth: .infinity, alignment: .leading)
           }
           .frame(maxWidth: .infinity)
         }
       }
 
       Spacer(minLength: 0)
-
-      Divider()
-        .padding(.bottom)
-
-      if let application = item.application {
-        HStack(spacing: 3) {
-          Text("Application", tableName: "PreviewItemView")
-          AppImageView(
-            appImage: item.applicationImage,
-            size: NSSize(width: 11, height: 11)
-          )
-          Text(application)
-        }
-      }
-
-      if item.hasImage, let image = item.item.image {
-        HStack(spacing: 3) {
-          Text("Dimensions", tableName: "PreviewItemView")
-          Text("\(Int(image.pixelSize.width))×\(Int(image.pixelSize.height))")
-        }
-      }
-
-      HStack(spacing: 3) {
-        Text("FirstCopyTime", tableName: "PreviewItemView")
-        Text(item.item.firstCopiedAt, style: .date)
-        Text(item.item.firstCopiedAt, style: .time)
-      }
-
-      HStack(spacing: 3) {
-        Text("LastCopyTime", tableName: "PreviewItemView")
-        Text(item.item.lastCopiedAt, style: .date)
-        Text(item.item.lastCopiedAt, style: .time)
-      }
-
-      HStack(spacing: 3) {
-        Text("NumberOfCopies", tableName: "PreviewItemView")
-        Text(String(item.item.numberOfCopies))
-      }
     }
     .controlSize(.small)
   }
@@ -117,11 +88,13 @@ struct PreviewItemView: View {
 struct LargeTextPreviewView: NSViewRepresentable {
   let text: String
   var query: String = ""
+  // Real (unmasked) text of the same character length to find matches in.
+  var searchSource: String?
 
   func makeNSView(context: Context) -> NSScrollView {
     let scrollView = Self.makeScrollView(text: text)
     if let textView = scrollView.documentView as? NSTextView {
-      Self.highlightMatches(of: query, in: textView)
+      Self.highlightMatches(of: query, in: textView, searching: searchSource)
     }
     return scrollView
   }
@@ -134,10 +107,10 @@ struct LargeTextPreviewView: NSViewRepresentable {
     if textView.string != text {
       textView.string = text
     }
-    Self.highlightMatches(of: query, in: textView)
+    Self.highlightMatches(of: query, in: textView, searching: searchSource)
   }
 
-  static func highlightMatches(of query: String, in textView: NSTextView) {
+  static func highlightMatches(of query: String, in textView: NSTextView, searching: String? = nil) {
     guard let storage = textView.textStorage else { return }
 
     let fullRange = NSRange(location: 0, length: storage.length)
@@ -150,15 +123,21 @@ struct LargeTextPreviewView: NSViewRepresentable {
 
     guard !query.isEmpty else { return }
 
-    let string = storage.string as NSString
-    var location = 0
-    while location < string.length {
-      let found = string.range(
-        of: query,
-        options: .caseInsensitive,
-        range: NSRange(location: location, length: string.length - location)
-      )
-      guard found.location != NSNotFound, found.length > 0 else { break }
+    let displayed = storage.string
+    let source = searching ?? displayed
+    var searchStart = source.startIndex
+    while searchStart < source.endIndex,
+          let match = source.range(
+            of: query, options: .caseInsensitive, range: searchStart..<source.endIndex
+          ) {
+      let lowerOffset = source.distance(from: source.startIndex, to: match.lowerBound)
+      let upperOffset = source.distance(from: source.startIndex, to: match.upperBound)
+      searchStart = match.upperBound
+      guard upperOffset <= displayed.count else { break }
+
+      let displayLower = displayed.index(displayed.startIndex, offsetBy: lowerOffset)
+      let displayUpper = displayed.index(displayed.startIndex, offsetBy: upperOffset)
+      let found = NSRange(displayLower..<displayUpper, in: displayed)
 
       switch Defaults[.highlightMatch] {
       case .bold:
@@ -181,8 +160,6 @@ struct LargeTextPreviewView: NSViewRepresentable {
         storage.addAttribute(.backgroundColor, value: NSColor.findHighlightColor, range: found)
         storage.addAttribute(.foregroundColor, value: NSColor.black, range: found)
       }
-
-      location = found.location + found.length
     }
   }
 
@@ -213,6 +190,7 @@ struct LargeTextPreviewView: NSViewRepresentable {
     scrollView.hasVerticalScroller = true
     scrollView.hasHorizontalScroller = false
     scrollView.autohidesScrollers = true
+    scrollView.scrollerStyle = .overlay
     scrollView.borderType = .noBorder
     scrollView.drawsBackground = false
     return scrollView

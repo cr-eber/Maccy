@@ -155,12 +155,15 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
     var removedItemIndex: Int?
     if let existingHistoryItem = findSimilarItem(item) {
-      if isModified(item) == nil {
+      // Only reuse old contents for exact duplicates; a text duplicate with
+      // different formats keeps the latest copy's formats.
+      if isModified(item) == nil && existingHistoryItem.supersedes(item) {
         transferContents(from: existingHistoryItem, to: item)
       }
       item.firstCopiedAt = existingHistoryItem.firstCopiedAt
       item.numberOfCopies += existingHistoryItem.numberOfCopies
       item.pin = existingHistoryItem.pin
+      item.masked = existingHistoryItem.masked
       item.title = existingHistoryItem.title
       if !item.fromMaccy {
         item.application = existingHistoryItem.application
@@ -485,11 +488,24 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
   @MainActor
   private func findSimilarItem(_ item: HistoryItem) -> HistoryItem? {
-    if let duplicate = all.first(where: { $0.item != item && $0.item.supersedes(item) }) {
+    if let duplicate = all.first(where: {
+      $0.item != item && ($0.item.supersedes(item) || Self.samePlainText($0.item, item))
+    }) {
       return duplicate.item
     }
 
     return isModified(item)
+  }
+
+  // Items with identical plain text are duplicates even when their other
+  // formats (RTF, HTML, source metadata) differ between applications.
+  private static func samePlainText(_ lhs: HistoryItem, _ rhs: HistoryItem) -> Bool {
+    guard let lhsText = lhs.text, let rhsText = rhs.text,
+          !lhsText.isEmpty, !rhsText.isEmpty else {
+      return false
+    }
+
+    return lhsText == rhsText
   }
 
   private func isModified(_ item: HistoryItem) -> HistoryItem? {

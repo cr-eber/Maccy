@@ -18,6 +18,12 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
   var title: String = ""
   var attributedTitle: AttributedString?
+  var isMasked: Bool = false
+
+  // Title as displayed: masked items show only the first/last few characters.
+  var displayTitle: String {
+    isMasked ? Self.mask(title) : title
+  }
 
   var isVisible: Bool = true
   var selectionIndex: Int = -1
@@ -62,6 +68,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     hasher.combine(id)
     hasher.combine(title)
     hasher.combine(attributedTitle)
+    hasher.combine(isMasked)
   }
 
   private(set) var item: HistoryItem
@@ -80,7 +87,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
       let size = image.pixelSize
       parts.append(String(format: NSLocalizedString("history_item_image_accessibility_label_no_app", comment: ""), Int(size.width), Int(size.height)))
     } else {
-      parts.append(title)
+      parts.append(displayTitle)
     }
     if let application = application {
       parts.append(application)
@@ -98,6 +105,7 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     self.item = item
     self.shortcuts = shortcuts
     self.title = item.title
+    self.isMasked = item.masked
     self.applicationImage = ApplicationImageCache.shared.getImage(item: item)
 
     synchronizeItemPin()
@@ -187,19 +195,50 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   // whether the match is already visible without windowing.
   private static let approxCharsPerLine = 60
 
+  // Replace the middle of the text with password dots, keeping the exact
+  // character count so search highlight positions stay valid.
+  static func mask(_ text: String) -> String {
+    let prefixCount = max(0, Defaults[.maskPrefixLength])
+    let suffixCount = max(0, Defaults[.maskSuffixLength])
+    let characters = Array(text)
+    guard characters.count > prefixCount + suffixCount else {
+      return String(repeating: "•", count: characters.count)
+    }
+
+    return String(characters.prefix(prefixCount))
+      + String(repeating: "•", count: characters.count - prefixCount - suffixCount)
+      + String(characters.suffix(suffixCount))
+  }
+
+  @MainActor
+  func toggleMask() {
+    item.masked.toggle()
+    isMasked = item.masked
+    try? Storage.shared.context.save()
+  }
+
   // Highlight every occurrence of the query in the given text using the
   // configured highlight style. Used by the preview pane.
-  static func highlightAll(of query: String, in text: String) -> AttributedString {
+  // `searching` provides the real (unmasked) text to find matches in while
+  // the attributes are applied to `text` (the displayed, possibly masked,
+  // string of the same character length).
+  static func highlightAll(
+    of query: String, in text: String, searching: String? = nil
+  ) -> AttributedString {
     var attributed = AttributedString(text)
     guard !query.isEmpty else { return attributed }
 
-    var searchStart = text.startIndex
-    while searchStart < text.endIndex,
-          let match = text.range(
-            of: query, options: .caseInsensitive, range: searchStart..<text.endIndex
+    let source = searching ?? text
+    var searchStart = source.startIndex
+    while searchStart < source.endIndex,
+          let match = source.range(
+            of: query, options: .caseInsensitive, range: searchStart..<source.endIndex
           ) {
-      if let lower = AttributedString.Index(match.lowerBound, within: attributed),
-         let upper = AttributedString.Index(match.upperBound, within: attributed) {
+      let lowerOffset = source.distance(from: source.startIndex, to: match.lowerBound)
+      let upperOffset = source.distance(from: source.startIndex, to: match.upperBound)
+      if upperOffset <= attributed.characters.count {
+        let lower = attributed.characters.index(attributed.startIndex, offsetBy: lowerOffset)
+        let upper = attributed.characters.index(attributed.startIndex, offsetBy: upperOffset)
         switch Defaults[.highlightMatch] {
         case .bold:
           attributed[lower..<upper].font = .bold(.body)()
@@ -246,7 +285,14 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     let cutAtStart = windowStart > title.startIndex
     let cutAtEnd = windowEnd < title.endIndex
 
-    var display = String(title[windowStart..<windowEnd])
+    // Masked items render dots in place of the real characters; the masked
+    // string has the same character count, so all offsets stay valid.
+    let displaySource = isMasked ? Self.mask(title) : title
+    let startOffset = title.distance(from: title.startIndex, to: windowStart)
+    let endOffset = title.distance(from: title.startIndex, to: windowEnd)
+    let displayStart = displaySource.index(displaySource.startIndex, offsetBy: startOffset)
+    let displayEnd = displaySource.index(displaySource.startIndex, offsetBy: endOffset)
+    var display = String(displaySource[displayStart..<displayEnd])
     if cutAtStart {
       display = "…" + display
     }

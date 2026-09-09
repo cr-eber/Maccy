@@ -5,6 +5,20 @@ import Defaults
 // swiftlint:disable force_try
 @MainActor
 class HistoryItemTests: XCTestCase {
+  let savedShowSpecialSymbols = Defaults[.showSpecialSymbols]
+
+  override func setUp() {
+    super.setUp()
+    // These title tests exercise the special-symbols rendering, which is
+    // no longer on by default.
+    Defaults[.showSpecialSymbols] = true
+  }
+
+  override func tearDown() {
+    super.tearDown()
+    Defaults[.showSpecialSymbols] = savedShowSpecialSymbols
+  }
+
   func testTitleForString() {
     let title = "foo"
     let item = historyItem(title)

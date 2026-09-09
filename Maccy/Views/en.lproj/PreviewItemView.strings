@@ -10,3 +10,5 @@
 "ClosePreview" = "Press {previewKey} to hide preview.";
 "CopyExtractedText" = "Copy extracted text.";
 "ScanQRCode" = "Scan QR code and copy its content.";
+"MaskItem" = "Mask item text with dots for screen sharing.";
+"UnmaskItem" = "Reveal the masked item text.";

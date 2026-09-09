@@ -8,6 +8,8 @@ struct AppearanceSettingsPane: View {
   @Default(.appearanceMode) private var appearanceMode
   @Default(.backgroundOpacity) private var backgroundOpacity
   @Default(.itemGap) private var itemGap
+  @Default(.maskPrefixLength) private var maskPrefixLength
+  @Default(.maskSuffixLength) private var maskSuffixLength
   @Default(.maxItemLines) private var maxItemLines
   @Default(.popupPosition) private var popupAt
   @Default(.popupScreen) private var popupScreen
@@ -119,6 +121,22 @@ struct AppearanceSettingsPane: View {
             .frame(width: 30, alignment: .leading)
         }
         .help(Text("ItemGapTooltip", tableName: "AppearanceSettings"))
+      }
+
+      Settings.Section(label: { Text("MaskReveal", tableName: "AppearanceSettings") }) {
+        HStack {
+          Text("MaskRevealFirst", tableName: "AppearanceSettings")
+          Text(verbatim: "\(maskPrefixLength)")
+          Stepper("", value: $maskPrefixLength, in: 0...20)
+            .labelsHidden()
+            .accessibilityLabel(Text("MaskRevealFirst", tableName: "AppearanceSettings"))
+          Text("MaskRevealLast", tableName: "AppearanceSettings")
+          Text(verbatim: "\(maskSuffixLength)")
+          Stepper("", value: $maskSuffixLength, in: 0...20)
+            .labelsHidden()
+            .accessibilityLabel(Text("MaskRevealLast", tableName: "AppearanceSettings"))
+        }
+        .help(Text("MaskRevealTooltip", tableName: "AppearanceSettings"))
       }
 
       Settings.Section(label: { Text("SelectionColor", tableName: "AppearanceSettings") }) {
