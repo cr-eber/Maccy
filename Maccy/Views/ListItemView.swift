@@ -57,7 +57,7 @@ struct ListItemView<Title: View, ID: Hashable>: View {
 
   private var stripeColor: Color {
     if let stripeIndex, !stripeIndex.isMultiple(of: 2) {
-      return Color.primary.opacity(0.05)
+      return Color.primary.opacity(0.09)
     }
     // macOS 26 broke hovering if no background is present.
     // The slight opacity white background is a workaround
