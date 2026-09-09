@@ -35,6 +35,7 @@
 "HighlightMatchBold" = "Bold";
 "HighlightMatchItalic" = "Italic";
 "HighlightMatchUnderline" = "Underline";
+"HighlightMatchColoredText" = "Text color";
 "HighlightMatchesTooltip" = "Change the highlighting style for search matches.\nDefault: Bold.";
 "ShowSpecialSymbols" = "Show special symbols";
 "ShowSpecialSymbolsTooltip" = "Show newlines, tabs, leading and trailing spaces via special symbols.";

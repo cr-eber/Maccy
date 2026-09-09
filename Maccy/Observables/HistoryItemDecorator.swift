@@ -1,5 +1,6 @@
 import AppKit.NSWorkspace
 import Defaults
+import SwiftHEXColors
 import Foundation
 import Observation
 import Sauce
@@ -251,6 +252,9 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
         attributedString[lowerBound..<upperBound].font = .italic(.body)()
       case .underline:
         attributedString[lowerBound..<upperBound].underlineStyle = .single
+      case .coloredText:
+        attributedString[lowerBound..<upperBound].foregroundColor =
+          NSColor(hexString: Defaults[.highlightMatchColor]) ?? NSColor(hexString: "#D45247")
       default:
         attributedString[lowerBound..<upperBound].backgroundColor = .findHighlightColor
         attributedString[lowerBound..<upperBound].foregroundColor = .black

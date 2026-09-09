@@ -94,8 +94,8 @@ struct ListItemView<Title: View, ID: Hashable>: View {
           .accessibilityHidden(true)
           .padding(.trailing, 5)
           .padding(.vertical, 5)
-      } else {
-        // Top-align the text within the fixed-height row.
+      } else if stripeIndex != nil {
+        // History rows have a uniform height; top-align the text within it.
         VStack(spacing: 0) {
           ListItemTitleView(attributedTitle: attributedTitle, title: title)
           Spacer(minLength: 0)
@@ -103,6 +103,10 @@ struct ListItemView<Title: View, ID: Hashable>: View {
         .padding(.top, Popup.itemVerticalInset)
         .accessibilityHidden(true)
         .padding(.trailing, 5)
+      } else {
+        ListItemTitleView(attributedTitle: attributedTitle, title: title)
+          .accessibilityHidden(true)
+          .padding(.trailing, 5)
       }
 
       Spacer()
@@ -135,7 +139,10 @@ struct ListItemView<Title: View, ID: Hashable>: View {
       }
       .padding(.trailing, 10)
     }
-    .frame(height: Popup.itemHeight(lines: maxItemLines))
+    // Only history rows (striped) get the uniform multi-line height;
+    // footer and paste stack rows keep the compact single-line height.
+    .frame(height: stripeIndex != nil ? Popup.itemHeight(lines: maxItemLines) : nil)
+    .frame(minHeight: Popup.itemHeight)
     .clipped()
     .id(id)
     .frame(maxWidth: .infinity, alignment: .leading)

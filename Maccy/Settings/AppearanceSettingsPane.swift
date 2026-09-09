@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 import Defaults
 import Settings
+import SwiftHEXColors
 
 struct AppearanceSettingsPane: View {
   @Default(.appearanceMode) private var appearanceMode
@@ -15,6 +16,21 @@ struct AppearanceSettingsPane: View {
   @Default(.openPreviewAutomatically) private var openPreviewAutomatically
   @Default(.previewDelay) private var previewDelay
   @Default(.highlightMatch) private var highlightMatch
+  @Default(.highlightMatchColor) private var highlightMatchColor
+
+  private var highlightColorBinding: Binding<Color> {
+    Binding {
+      Color(nsColor: NSColor(hexString: highlightMatchColor) ?? .systemRed)
+    } set: { newValue in
+      guard let srgb = NSColor(newValue).usingColorSpace(.sRGB) else { return }
+      highlightMatchColor = String(
+        format: "#%02X%02X%02X",
+        Int(round(srgb.redComponent * 255)),
+        Int(round(srgb.greenComponent * 255)),
+        Int(round(srgb.blueComponent * 255))
+      )
+    }
+  }
   @Default(.menuIcon) private var menuIcon
   @Default(.showInStatusBar) private var showInStatusBar
   @Default(.showSearch) private var showSearch
@@ -181,15 +197,23 @@ struct AppearanceSettingsPane: View {
         bottomDivider: true,
         label: { Text("HighlightMatches", tableName: "AppearanceSettings") }
       ) {
-        Picker("", selection: $highlightMatch) {
-          ForEach(HighlightMatch.allCases) { match in
-            Text(match.description)
+        HStack {
+          Picker("", selection: $highlightMatch) {
+            ForEach(HighlightMatch.allCases) { match in
+              Text(match.description)
+            }
+          }
+          .labelsHidden()
+          .frame(width: 141, alignment: .leading)
+          .help(Text("HighlightMatchesTooltip", tableName: "AppearanceSettings"))
+          .accessibilityLabel(Text("HighlightMatches", tableName: "AppearanceSettings"))
+
+          if highlightMatch == .coloredText {
+            ColorPicker("", selection: highlightColorBinding, supportsOpacity: false)
+              .labelsHidden()
+              .accessibilityLabel(Text("HighlightMatchColoredText", tableName: "AppearanceSettings"))
           }
         }
-        .labelsHidden()
-        .frame(width: 141, alignment: .leading)
-        .help(Text("HighlightMatchesTooltip", tableName: "AppearanceSettings"))
-        .accessibilityLabel(Text("HighlightMatches", tableName: "AppearanceSettings"))
       }
 
       Settings.Section(title: "") {
