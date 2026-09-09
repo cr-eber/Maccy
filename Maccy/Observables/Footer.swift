@@ -17,11 +17,10 @@ class Footer: ItemsContainer {
     set: { Defaults[.suppressClearAlert] = $0 }
   )
 
-  private var showFooter: Bool {
-    return Defaults[.showFooter]
-  }
+  // The footer list is no longer rendered at the bottom of the popup;
+  // its actions live in the header cog menu instead.
   var containerVisible: Bool {
-    return showFooter
+    return false
   }
 
   init() { // swiftlint:disable:this function_body_length

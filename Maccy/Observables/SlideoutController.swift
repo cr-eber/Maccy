@@ -65,7 +65,8 @@ enum ResizingMode {
 @Observable
 class SlideoutController {
   let logger = Logger(label: "org.p0deje.Maccy")
-  private static let animationDuration = 0.25
+  // No transition: the preview shows and hides immediately.
+  private static let animationDuration = 0.0
 
   let onContentResize: (CGFloat) -> Void
   let onSlideoutResize: (CGFloat) -> Void
