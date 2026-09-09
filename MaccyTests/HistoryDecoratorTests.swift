@@ -134,6 +134,34 @@ class HistoryItemDecoratorTests: XCTestCase {
     XCTAssertEqual(itemDecorator.attributedTitle, nil)
   }
 
+  func testHighlightWindowsLongItemAroundMatch() {
+    // Match far into a long item: the visible snippet must start with "…"
+    // and still contain the highlighted match.
+    let title = String(repeating: "a", count: 600) + "needle" + String(repeating: "b", count: 600)
+    let itemDecorator = historyItemDecorator(title)
+    itemDecorator.highlight("needle", [range(from: 600, to: 605, in: itemDecorator)])
+
+    let attributedTitle = itemDecorator.attributedTitle!
+    let visibleText = String(attributedTitle.characters)
+    XCTAssertTrue(visibleText.hasPrefix("…"))
+    XCTAssertTrue(visibleText.contains("needle"))
+
+    let matchRange = attributedTitle.range(of: "needle")!
+    XCTAssertEqual(attributedTitle[matchRange].font, .bold(.body)())
+  }
+
+  func testHighlightMarksCutOffEndWithEllipsis() {
+    // Match near the start of a long item: snippet is cut at the end only.
+    let title = "abcneedle" + String(repeating: "x", count: 900)
+    let itemDecorator = historyItemDecorator(title)
+    itemDecorator.highlight("needle", [range(from: 3, to: 8, in: itemDecorator)])
+
+    let visibleText = String(itemDecorator.attributedTitle!.characters)
+    XCTAssertFalse(visibleText.hasPrefix("…"))
+    XCTAssertTrue(visibleText.hasSuffix("…"))
+    XCTAssertTrue(visibleText.contains("needle"))
+  }
+
   private func historyItemDecorator(
     _ value: String?,
     application: String? = "com.apple.finder"

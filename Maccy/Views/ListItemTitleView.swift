@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ListItemTitleView<Title: View>: View {
+  static var maxLines: Int { 3 }
+
   var attributedTitle: AttributedString?
   @ViewBuilder var title: () -> Title
 
@@ -8,12 +10,12 @@ struct ListItemTitleView<Title: View>: View {
     if let attributedTitle {
       Text(attributedTitle)
         .accessibilityIdentifier("copy-history-item")
-        .lineLimit(1)
-        .truncationMode(.middle)
+        .lineLimit(Self.maxLines)
+        .truncationMode(.tail)
     } else {
       title()
         .accessibilityIdentifier("copy-history-item")
-        .lineLimit(1)
+        .lineLimit(Self.maxLines)
         .truncationMode(.middle)
         // Workaround for macOS 26 to avoid flipped text
         // https://github.com/p0deje/Maccy/issues/1113

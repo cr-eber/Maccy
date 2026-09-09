@@ -178,27 +178,75 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     generateThumbnailImage()
   }
 
+  // Number of characters to keep before the first match when the matched
+  // part of a long item would otherwise be scrolled out of view.
+  private static let matchContextBefore = 20
+  private static let matchWindowLength = 500
+
   func highlight(_ query: String, _ ranges: [Range<String.Index>]) {
     guard !query.isEmpty, !title.isEmpty else {
       attributedTitle = nil
       return
     }
 
-    var attributedString = AttributedString(title.shortened(to: 500))
+    // Window the title around the first match (à la Ditto) so the matched
+    // part is always visible, marking cut-off sides with an ellipsis.
+    var windowStart = title.startIndex
+    if let firstMatch = ranges.first,
+       firstMatch.lowerBound >= title.startIndex, firstMatch.lowerBound <= title.endIndex,
+       title.distance(from: title.startIndex, to: firstMatch.lowerBound) > Self.matchContextBefore {
+      windowStart = title.index(firstMatch.lowerBound, offsetBy: -Self.matchContextBefore)
+    }
+    let windowEnd = title.index(
+      windowStart, offsetBy: Self.matchWindowLength, limitedBy: title.endIndex
+    ) ?? title.endIndex
+
+    let cutAtStart = windowStart > title.startIndex
+    let cutAtEnd = windowEnd < title.endIndex
+
+    var display = String(title[windowStart..<windowEnd])
+    if cutAtStart {
+      display = "…" + display
+    }
+    if cutAtEnd {
+      display += "…"
+    }
+
+    var attributedString = AttributedString(display)
+    let windowOffset = title.distance(from: title.startIndex, to: windowStart)
+    let ellipsisOffset = cutAtStart ? 1 : 0
+    let visibleLength = title.distance(from: windowStart, to: windowEnd)
+
     for range in ranges {
-      if let lowerBound = AttributedString.Index(range.lowerBound, within: attributedString),
-         let upperBound = AttributedString.Index(range.upperBound, within: attributedString) {
-        switch Defaults[.highlightMatch] {
-        case .bold:
-          attributedString[lowerBound..<upperBound].font = .bold(.body)()
-        case .italic:
-          attributedString[lowerBound..<upperBound].font = .italic(.body)()
-        case .underline:
-          attributedString[lowerBound..<upperBound].underlineStyle = .single
-        default:
-          attributedString[lowerBound..<upperBound].backgroundColor = .findHighlightColor
-          attributedString[lowerBound..<upperBound].foregroundColor = .black
-        }
+      guard range.lowerBound >= title.startIndex, range.upperBound <= title.endIndex else {
+        continue
+      }
+
+      var lower = title.distance(from: title.startIndex, to: range.lowerBound) - windowOffset
+      var upper = title.distance(from: title.startIndex, to: range.upperBound) - windowOffset
+      lower = max(lower, 0)
+      upper = min(upper, visibleLength)
+      guard lower < upper else {
+        continue
+      }
+
+      let lowerBound = attributedString.characters.index(
+        attributedString.startIndex, offsetBy: lower + ellipsisOffset
+      )
+      let upperBound = attributedString.characters.index(
+        attributedString.startIndex, offsetBy: upper + ellipsisOffset
+      )
+
+      switch Defaults[.highlightMatch] {
+      case .bold:
+        attributedString[lowerBound..<upperBound].font = .bold(.body)()
+      case .italic:
+        attributedString[lowerBound..<upperBound].font = .italic(.body)()
+      case .underline:
+        attributedString[lowerBound..<upperBound].underlineStyle = .single
+      default:
+        attributedString[lowerBound..<upperBound].backgroundColor = .findHighlightColor
+        attributedString[lowerBound..<upperBound].foregroundColor = .black
       }
     }
 
