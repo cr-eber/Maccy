@@ -9,3 +9,4 @@
 "OpenPreview" = "Press {previewKey} to show preview.";
 "ClosePreview" = "Press {previewKey} to hide preview.";
 "CopyExtractedText" = "Copy extracted text.";
+"ScanQRCode" = "Scan QR code and copy its content.";

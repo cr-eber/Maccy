@@ -1,6 +1,7 @@
 import Defaults
 import KeyboardShortcuts
 import SwiftUI
+import Vision
 
 private struct KeyboardShortcutHelpModifier: ViewModifier {
   // A nil name produces help text without a keyboard shortcut substitution.
@@ -90,13 +91,28 @@ struct ToolbarView: View {
     return item
   }
 
-  private var selectedImageText: String? {
-    guard let item = selectedImageItem else {
-      return nil
+  // Scan the selected image for a QR code and copy its content.
+  // If multiple codes are present, the first detected one wins.
+  private func scanQRCode() {
+    guard let image = selectedImageItem?.item.image,
+          let cgImage = image.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+      return
     }
 
-    let text = item.title.trimmingCharacters(in: .whitespacesAndNewlines)
-    return text.isEmpty ? nil : item.title
+    Task.detached(priority: .userInitiated) {
+      let request = VNDetectBarcodesRequest()
+      request.symbologies = [.qr]
+      let handler = VNImageRequestHandler(cgImage: cgImage)
+      try? handler.perform([request])
+
+      guard let payload = request.results?.first?.payloadStringValue else {
+        return
+      }
+
+      await MainActor.run {
+        Clipboard.shared.copyInMaccy(payload)
+      }
+    }
   }
 
   var body: some View {
@@ -106,13 +122,11 @@ struct ToolbarView: View {
 
         if selectedImageItem != nil {
           ToolbarButton {
-            guard let selectedImageText else { return }
-            Clipboard.shared.copyInMaccy(selectedImageText)
+            scanQRCode()
           } label: {
-            Image(systemName: "text.viewfinder")
+            Image(systemName: "qrcode.viewfinder")
           }
-          .shortcutKeyHelp(key: "CopyExtractedText", tableName: "PreviewItemView")
-          .disabled(selectedImageText == nil)
+          .shortcutKeyHelp(key: "ScanQRCode", tableName: "PreviewItemView")
         }
 
         ToolbarButton {
