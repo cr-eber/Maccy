@@ -58,36 +58,8 @@ where Content: View, Slideout: View {
         if let window = appState.appDelegate?.panel {
           window.isMovableByWindowBackground = !inside
         }
-        if inside {
-          if #available(macOS 15.0, *) {
-            NSCursor.columnResize.push()
-          } else {
-            NSCursor.resizeLeftRight.push()
-          }
-        } else {
-          NSCursor.pop()
-        }
       })
-      .gesture(
-        DragGesture()
-          .onChanged({ value in
-            if let window = controller.nswindow {
-              controller.slideoutWidth = min(
-                max(
-                  controller.minimumSlideoutWidth,
-                  controller.slideoutResizeWidth + (leftToRight ? -1 : 1)
-                    * value.translation.width
-                ),
-                window.frame.width - controller.minimumContentWidth
-              )
-              controller.contentWidth = window.frame.width - controller.slideoutWidth
-            }
-          })
-          .onEnded({ _ in
-            controller.slideoutWidth = controller.slideoutResizeWidth
-            controller.contentWidth = controller.contentResizeWidth
-          })
-      )
+      // The preview pane has a fixed width; the divider is not draggable.
       .disabled(controller.state != .open)
       .frame(maxWidth: 0)
       .opacity(controller.state != .closed ? 1 : 0)

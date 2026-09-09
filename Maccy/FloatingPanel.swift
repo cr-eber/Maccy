@@ -130,14 +130,9 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
     let preview = AppState.shared.preview
 
     if inLiveResize && preview.resizingMode == .none {
-      let screenPoint = NSEvent.mouseLocation
-      let windowPoint = convertPoint(fromScreen: screenPoint)
-      let location: SlideoutPlacement = windowPoint.x <= frame.width / 2 ? .left : .right
-      if (location == preview.placement) && preview.state == .open {
-        preview.startResize(mode: .slideout)
-      } else {
-        preview.startResize(mode: .content)
-      }
+      // The preview pane has a fixed width; window resizing only ever
+      // changes the content side.
+      preview.startResize(mode: .content)
     }
 
     var finalFrameSize = frameSize
