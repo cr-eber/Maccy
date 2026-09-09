@@ -3,13 +3,10 @@ import SwiftUI
 
 struct HeaderView: View {
   @State private var appState = AppState.shared
+  @State private var settingsMenuShown = false
 
   let controller: SlideoutController
   @FocusState.Binding var searchFocused: Bool
-
-  var previewPlacement: SlideoutPlacement {
-    return controller.placement
-  }
 
   var body: some View {
     HStack(alignment: .top, spacing: 0) {
@@ -21,19 +18,20 @@ struct HeaderView: View {
         .padding(.horizontal, Popup.horizontalPadding)
 
         ToolbarButton {
-          controller.togglePreview()
+          settingsMenuShown.toggle()
         } label: {
-          Image(
-            systemName: previewPlacement == .right
-              ? "sidebar.left" : "sidebar.right"
-          )
+          Image(systemName: "gearshape")
         }
-        .shortcutKeyHelp(
-          name: .togglePreview,
-          key: controller.state.isOpen ? "ClosePreview" : "OpenPreview",
-          tableName: "PreviewItemView",
-          replacementKey: "previewKey"
-        )
+        .accessibilityLabel(Text(LocalizedStringKey("preferences")))
+        .popover(isPresented: $settingsMenuShown, arrowEdge: .bottom) {
+          VStack(alignment: .leading, spacing: 2) {
+            ForEach(appState.footer.items) { item in
+              FooterItemView(item: item)
+            }
+          }
+          .padding(6)
+          .frame(width: 220)
+        }
         .padding(.trailing, Popup.horizontalPadding)
       }
       .opacity(appState.searchVisible ? 1 : 0)
