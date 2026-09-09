@@ -54,6 +54,7 @@ struct HistoryItemView: View {
       selectionIndex: item.multiSelectionIndex,
       selectionAppearance: selectionAppearance,
       stripeIndex: index,
+      isPinnedRow: item.isPinned,
       accessibilityLabel: item.accessibilityLabel
     ) {
       Text(verbatim: item.title)

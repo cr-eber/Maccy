@@ -43,6 +43,8 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   var selectionAppearance: SelectionAppearance = .none
   // Row index used for the alternating (zebra) background; nil disables striping.
   var stripeIndex: Int?
+  // Pinned rows are one line tall with a light yellow tint.
+  var isPinnedRow: Bool = false
   // Complete description used when the row's visual content is hidden from accessibility.
   var accessibilityLabel: String = ""
   @ViewBuilder var title: () -> Title
@@ -59,12 +61,20 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   }
 
   private var stripeColor: Color {
+    if isPinnedRow {
+      return Color.yellow.opacity(0.15)
+    }
     if let stripeIndex, !stripeIndex.isMultiple(of: 2) {
       return Color.primary.opacity(0.09)
     }
     // macOS 26 broke hovering if no background is present.
     // The slight opacity white background is a workaround
     return Color.white.opacity(0.001)
+  }
+
+  private var rowHeight: CGFloat? {
+    guard stripeIndex != nil else { return nil }
+    return isPinnedRow ? Popup.itemHeight : Popup.itemHeight(lines: maxItemLines)
   }
 
   private var selectionNSColor: NSColor {
@@ -108,7 +118,11 @@ struct ListItemView<Title: View, ID: Hashable>: View {
       } else if stripeIndex != nil {
         // History rows have a uniform height; top-align the text within it.
         VStack(spacing: 0) {
-          ListItemTitleView(attributedTitle: attributedTitle, title: title)
+          ListItemTitleView(
+            attributedTitle: attributedTitle,
+            lineLimitOverride: isPinnedRow ? 1 : nil,
+            title: title
+          )
           Spacer(minLength: 0)
         }
         .padding(.top, Popup.itemVerticalInset)
@@ -151,12 +165,9 @@ struct ListItemView<Title: View, ID: Hashable>: View {
       .padding(.trailing, 10)
     }
     // Only history rows (striped) get the uniform multi-line height;
-    // footer and paste stack rows keep the compact single-line height.
+    // pinned rows are one line, footer and paste stack rows stay compact.
     // Top alignment keeps text, icons, and images at the row's top.
-    .frame(
-      height: stripeIndex != nil ? Popup.itemHeight(lines: maxItemLines) : nil,
-      alignment: .top
-    )
+    .frame(height: rowHeight, alignment: .top)
     .frame(minHeight: Popup.itemHeight, alignment: .top)
     .clipped()
     .id(id)
