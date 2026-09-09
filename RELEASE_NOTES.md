@@ -15,6 +15,18 @@ action in a bottom menu. This fork fixes all of that.
   *Original: the match stayed hidden past the truncation — you matched, but saw nothing.*
 - **Text search means text.** Image items are excluded from search results.
   *Original: searching a word surfaced screenshots that happened to contain it via OCR.*
+- **The preview highlights every match** of the search query too, not just the list.
+
+## Mask — screen-share your clipboard safely
+
+- **One click masks any item** (eye button beside pin): `Hello I am Crews` becomes
+  `Hell•••••••••ews` — first 4 and last 3 characters visible, everything between
+  replaced by password dots of the exact same length (both counts configurable).
+- Applies everywhere the item shows: list, search snippets, and the preview.
+- **Search still works on the real text**, and highlights land on the dots at the
+  exact matched positions — search "Hello" and `Hell•` lights up.
+- Purely visual: pasting pastes the real content; the mask persists until you
+  unmask. *Original: nothing — your copied passwords sat in plain sight.*
 
 ## A list you can actually read
 
@@ -53,8 +65,12 @@ action in a bottom menu. This fork fixes all of that.
 
 ## Less clutter, more power
 
-- **Cog menu**: Clear / Preferences / About / Quit moved into a gear icon next to the
-  search box. The permanent bottom footer is gone.
+- **Cog menu**: a gear icon next to the search box holds Preferences and Quit; the
+  permanent bottom footer is gone. Clear / Clear all live in Preferences → Storage.
+- **One copy per text**: re-copying the same text from another app replaces the old
+  entry and keeps the latest formats. *Original: near-duplicates piled up because
+  each app attaches different styling metadata.*
+- **Whitespace-only copies** (spaces, tabs, newlines) are ignored entirely.
 - **QR code scanner**: select an image item and hit the QR button — the first detected
   code's content is copied as a new clip. *Original: only OCR text extraction.*
 - **10,000 items by default, up to 50,000.** *Original: 200 by default, capped at 999.*

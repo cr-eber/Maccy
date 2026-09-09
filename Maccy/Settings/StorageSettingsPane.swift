@@ -61,6 +61,8 @@ struct StorageSettingsPane: View {
 
   @State private var viewModel = ViewModel()
   @State private var storageSize = Storage.shared.size
+  @State private var showClearConfirmation = false
+  @State private var confirmationClearsAll = false
 
   private let sizeFormatter: NumberFormatter = {
     let formatter = NumberFormatter()
@@ -121,6 +123,41 @@ struct StorageSettingsPane: View {
         .frame(width: 160, alignment: .leading)
         .help(Text("SortByTooltip", tableName: "StorageSettings"))
         .accessibilityLabel(Text("SortBy", tableName: "StorageSettings"))
+      }
+
+      Settings.Section(label: { Text("ClearHistory", tableName: "StorageSettings") }) {
+        HStack {
+          Button {
+            confirmationClearsAll = false
+            showClearConfirmation = true
+          } label: {
+            Text(LocalizedStringKey("clear"))
+          }
+          .help(Text(LocalizedStringKey("clear_tooltip")))
+
+          Button(role: .destructive) {
+            confirmationClearsAll = true
+            showClearConfirmation = true
+          } label: {
+            Text(LocalizedStringKey("clear_all"))
+          }
+          .help(Text(LocalizedStringKey("clear_all_tooltip")))
+        }
+        .confirmationDialog(
+          Text(LocalizedStringKey("clear_alert_message")),
+          isPresented: $showClearConfirmation
+        ) {
+          Button(LocalizedStringKey("clear_alert_confirm"), role: .destructive) {
+            if confirmationClearsAll {
+              AppState.shared.history.clearAll()
+            } else {
+              AppState.shared.history.clear()
+            }
+          }
+          Button(LocalizedStringKey("clear_alert_cancel"), role: .cancel) {}
+        } message: {
+          Text(LocalizedStringKey("clear_alert_comment"))
+        }
       }
     }
   }

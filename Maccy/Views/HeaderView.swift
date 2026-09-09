@@ -24,8 +24,9 @@ struct HeaderView: View {
         }
         .accessibilityLabel(Text(LocalizedStringKey("preferences")))
         .popover(isPresented: $settingsMenuShown, arrowEdge: .bottom) {
+          // Clearing history lives in Preferences > Storage.
           VStack(alignment: .leading, spacing: 2) {
-            ForEach(appState.footer.items) { item in
+            ForEach(appState.footer.items.filter { ["preferences", "quit"].contains($0.title) }) { item in
               FooterItemView(item: item)
             }
           }
