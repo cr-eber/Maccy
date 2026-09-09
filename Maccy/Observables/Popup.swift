@@ -37,6 +37,21 @@ class Popup {
     22
   }
 
+  static let itemLineHeight: CGFloat = {
+    let font = NSFont.preferredFont(forTextStyle: .body)
+    return NSLayoutManager().defaultLineHeight(for: font).rounded(.up)
+  }()
+
+  // Inset that vertically centers a single text line within itemHeight.
+  static var itemVerticalInset: CGFloat {
+    max(0, (itemHeight - itemLineHeight) / 2)
+  }
+
+  // Uniform row height for a configured number of text lines.
+  static func itemHeight(lines: Int) -> CGFloat {
+    itemHeight + CGFloat(max(0, lines - 1)) * itemLineHeight
+  }
+
   var needsResize = false
   var height: CGFloat = 0
   var headerHeight: CGFloat = 0

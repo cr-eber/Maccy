@@ -46,6 +46,7 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   var accessibilityLabel: String = ""
   @ViewBuilder var title: () -> Title
 
+  @Default(.maxItemLines) private var maxItemLines
   @Default(.showApplicationIcons) private var showIcons
   @Environment(AppState.self) private var appState
   @Environment(ModifierFlags.self) private var modifierFlags
@@ -94,9 +95,14 @@ struct ListItemView<Title: View, ID: Hashable>: View {
           .padding(.trailing, 5)
           .padding(.vertical, 5)
       } else {
-        ListItemTitleView(attributedTitle: attributedTitle, title: title)
-          .accessibilityHidden(true)
-          .padding(.trailing, 5)
+        // Top-align the text within the fixed-height row.
+        VStack(spacing: 0) {
+          ListItemTitleView(attributedTitle: attributedTitle, title: title)
+          Spacer(minLength: 0)
+        }
+        .padding(.top, Popup.itemVerticalInset)
+        .accessibilityHidden(true)
+        .padding(.trailing, 5)
       }
 
       Spacer()
@@ -129,7 +135,8 @@ struct ListItemView<Title: View, ID: Hashable>: View {
       }
       .padding(.trailing, 10)
     }
-    .frame(minHeight: Popup.itemHeight)
+    .frame(height: Popup.itemHeight(lines: maxItemLines))
+    .clipped()
     .id(id)
     .frame(maxWidth: .infinity, alignment: .leading)
     .foregroundStyle(isSelected ? Color.white : .primary)
