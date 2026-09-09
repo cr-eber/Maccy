@@ -110,6 +110,14 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     all = sorter.sort(results).map { HistoryItemDecorator($0) }
     items = all
 
+    // Heal titles stored with special symbols (⏎/⇥) after the
+    // showSpecialSymbols default changed.
+    if !Defaults[.showSpecialSymbols] {
+      for item in all where item.item.title.contains("⏎") || item.item.title.contains("⇥") {
+        updateTitle(item: item, title: item.item.generateTitle())
+      }
+    }
+
     limitHistorySize(to: Defaults[.size])
 
     updateShortcuts()
