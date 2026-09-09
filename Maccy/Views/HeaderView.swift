@@ -15,7 +15,7 @@ struct HeaderView: View {
           searchFocused: $searchFocused,
           searchQuery: $appState.history.searchQuery
         )
-        .padding(.horizontal, Popup.horizontalPadding)
+        .padding(.trailing, Popup.horizontalPadding)
 
         ToolbarButton {
           settingsMenuShown.toggle()
@@ -38,8 +38,6 @@ struct HeaderView: View {
       .accessibilityHidden(!appState.searchVisible)
       .layoutPriority(1)
     }
-    .padding(.top, Popup.verticalPadding)
-    .padding(.horizontal, 10)
     .animation(.default.speed(3), value: appState.navigator.leadSelection)
     .background(.clear)
     .frame(maxHeight: !appState.searchVisible ? 0 : nil, alignment: .top)

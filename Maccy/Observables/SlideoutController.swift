@@ -201,11 +201,11 @@ class SlideoutController {
     }
   }
 
+  // The preview pane width is fixed; resizing only ever touches the content side.
   func startResize(mode: ResizingMode) {
     logger.info("Starting resize with mode \(mode)")
     resizingMode = mode
     contentWidth = contentResizeWidth
-    slideoutWidth = slideoutResizeWidth
   }
 
   func endResize() {
@@ -213,10 +213,8 @@ class SlideoutController {
     switch resizingMode {
     case .none:
       return
-    case .content:
+    case .content, .slideout:
       contentWidth = contentResizeWidth
-    case .slideout:
-      slideoutWidth = slideoutResizeWidth
     }
     resizingMode = .none
   }
