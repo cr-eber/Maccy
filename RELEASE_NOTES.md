@@ -13,10 +13,14 @@ action in a bottom menu. This fork fixes all of that.
 - **Long items jump to the match.** If the match sits deep inside a long clip, the row
   re-windows around it with `…` marking the cut-off start/end.
   *Original: the match stayed hidden past the truncation — you matched, but saw nothing.*
+- **Text search means text.** Image items are excluded from search results.
+  *Original: searching a word surfaced screenshots that happened to contain it via OCR.*
 
 ## A list you can actually read
 
 - **Up to 3 lines per item** (configurable 1–10). *Original: 1 line, take it or leave it.*
+- **Real line breaks and tabs** in the list, just like the preview.
+  *Original: littered rows with `⏎` and `⇥` symbols.*
 - **Uniform row heights**, text/images top-aligned — a clean grid instead of jumping rows.
 - **Zebra striping** (alternating backgrounds) + **configurable gap** between items
   (default 10pt). *Original: an undifferentiated wall of text.*
@@ -26,20 +30,33 @@ action in a bottom menu. This fork fixes all of that.
 - **Color clips** (`#RRGGBB`) get a proper rounded swatch preview.
 - No more `⌘1–9` badge clutter (shortcuts still work), no "Maccy" label in the header.
 
+## Pinning that makes sense
+
+- **Pin icon leads every row**: faint outline to pin, orange filled pin to unpin —
+  one click, right where the item is. *Original: pinning hidden in a toolbar/menu.*
+- **Pinned items stand out**: always one line tall with a light yellow tint.
+- **Unpinning returns the item to the top** of the list, like a fresh copy.
+  *Original: it sank back to wherever its old timestamp put it.*
+
 ## A window that behaves
 
 - **True light/dark/system theme setting.** Light mode is pure white `#ffffff`
   with black text. *Original: always a translucent blur showing your wallpaper through.*
 - **Background opacity slider** (default 100% = fully opaque).
 - **Fixed popup height** — searching down to 2 results no longer collapses the window.
+- **Fixed preview width (400pt)** — no more mysteriously shrinking preview pane.
 - **Preview opens instantly** — slide animation removed.
-- **Pin = pin the preview pane** (on by default): the preview shows every time you open
-  the popup. *Original: pin only reordered items.*
+- **"Pin Preview" setting** (on by default): the preview pane shows automatically every
+  time the popup opens.
+- **Taller search box**, flush to the top-left corner, with a proper
+  "Type to search…" placeholder.
 
-## Less clutter, more capacity
+## Less clutter, more power
 
 - **Cog menu**: Clear / Preferences / About / Quit moved into a gear icon next to the
   search box. The permanent bottom footer is gone.
+- **QR code scanner**: select an image item and hit the QR button — the first detected
+  code's content is copied as a new clip. *Original: only OCR text extraction.*
 - **10,000 items by default, up to 50,000.** *Original: 200 by default, capped at 999.*
 - **Hotkey: `⌘` + `` ` ``** *(original: `⇧⌘C`)*.
 
