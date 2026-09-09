@@ -22,7 +22,9 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   var searchQuery: String = "" {
     didSet {
       throttler.throttle { [self] in
-        updateItems(search.search(string: searchQuery, within: all))
+        // Text search should never surface image items.
+        let searchScope = searchQuery.isEmpty ? all : all.filter { !$0.hasImage }
+        updateItems(search.search(string: searchQuery, within: searchScope))
 
         if searchQuery.isEmpty {
           AppState.shared.navigator.select(item: unpinnedItems.first)
