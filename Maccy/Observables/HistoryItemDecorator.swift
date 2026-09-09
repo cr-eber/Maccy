@@ -197,12 +197,22 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
   // Replace the middle of the text with password dots, keeping the exact
   // character count so search highlight positions stay valid.
+  // Rules:
+  // - 3 characters or fewer: mask everything (revealing any would be too much)
+  // - otherwise at least the first and last character are always shown
+  // - if the configured reveal would leave at most one character masked
+  //   (trivial to brute-force), fall back to first/last character only
   static func mask(_ text: String) -> String {
-    let prefixCount = max(0, Defaults[.maskPrefixLength])
-    let suffixCount = max(0, Defaults[.maskSuffixLength])
     let characters = Array(text)
-    guard characters.count > prefixCount + suffixCount else {
+    guard characters.count > 3 else {
       return String(repeating: "•", count: characters.count)
+    }
+
+    var prefixCount = max(1, Defaults[.maskPrefixLength])
+    var suffixCount = max(1, Defaults[.maskSuffixLength])
+    if characters.count - prefixCount - suffixCount <= 1 {
+      prefixCount = 1
+      suffixCount = 1
     }
 
     return String(characters.prefix(prefixCount))

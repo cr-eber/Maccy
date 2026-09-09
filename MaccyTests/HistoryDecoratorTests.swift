@@ -150,6 +150,23 @@ class HistoryItemDecoratorTests: XCTestCase {
     XCTAssertEqual(attributedTitle[matchRange].font, .bold(.body)())
   }
 
+  func testMask() {
+    Defaults[.maskPrefixLength] = 4
+    Defaults[.maskSuffixLength] = 3
+    defer {
+      Defaults.reset(.maskPrefixLength, .maskSuffixLength)
+    }
+
+    // Normal case: first 4 and last 3 visible, exact-length dots between.
+    XCTAssertEqual(HistoryItemDecorator.mask("Hello I am Crews"), "Hell•••••••••ews")
+    // 3 characters or fewer: fully masked.
+    XCTAssertEqual(HistoryItemDecorator.mask("abc"), "•••")
+    // Config would leave only 1 char masked: fall back to first/last only.
+    XCTAssertEqual(HistoryItemDecorator.mask("12345678"), "1••••••8")
+    // Config longer than the text: first/last only, never mask all.
+    XCTAssertEqual(HistoryItemDecorator.mask("12345"), "1•••5")
+  }
+
   func testHighlightMarksCutOffEndWithEllipsis() {
     // Match near the start of a long item: snippet is cut at the end only.
     let title = "abcneedle" + String(repeating: "x", count: 900)
