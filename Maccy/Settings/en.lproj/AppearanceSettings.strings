@@ -8,6 +8,8 @@
 "BackgroundOpacityTooltip" = "Opacity of the popup background.\nDefault: 100%.";
 "MaxItemLines" = "Lines per item:";
 "MaxItemLinesTooltip" = "Maximum number of text rows shown per history item.\nDefault: 3.";
+"ItemGap" = "Gap between items:";
+"ItemGapTooltip" = "Vertical space between history items in points.\nDefault: 10.";
 "PopupAt" = "Popup at:";
 "PopupAtCursor" = "Cursor";
 "PopupAtMenuBarIcon" = "Menu icon";

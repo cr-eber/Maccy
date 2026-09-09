@@ -6,6 +6,7 @@ import Settings
 struct AppearanceSettingsPane: View {
   @Default(.appearanceMode) private var appearanceMode
   @Default(.backgroundOpacity) private var backgroundOpacity
+  @Default(.itemGap) private var itemGap
   @Default(.maxItemLines) private var maxItemLines
   @Default(.popupPosition) private var popupAt
   @Default(.popupScreen) private var popupScreen
@@ -88,6 +89,19 @@ struct AppearanceSettingsPane: View {
             .accessibilityLabel(Text("MaxItemLines", tableName: "AppearanceSettings"))
         }
         .help(Text("MaxItemLinesTooltip", tableName: "AppearanceSettings"))
+      }
+
+      Settings.Section(label: { Text("ItemGap", tableName: "AppearanceSettings") }) {
+        HStack {
+          Slider(value: $itemGap, in: 0...30, step: 1)
+            .frame(width: 180)
+            .accessibilityLabel(Text("ItemGap", tableName: "AppearanceSettings"))
+          Text(verbatim: "\(Int(itemGap))")
+            .controlSize(.small)
+            .foregroundStyle(.gray)
+            .frame(width: 30, alignment: .leading)
+        }
+        .help(Text("ItemGapTooltip", tableName: "AppearanceSettings"))
       }
 
       Settings.Section(label: { Text("PopupAt", tableName: "AppearanceSettings") }) {

@@ -1,3 +1,4 @@
+import Defaults
 import SwiftUI
 
 struct MultipleSelectionListView<Element, ID, Content>: View
@@ -5,8 +6,10 @@ struct MultipleSelectionListView<Element, ID, Content>: View
   var items: [Element]
   var content: (Element?, Element, Element?, Int) -> Content
 
+  @Default(.itemGap) private var itemGap
+
   var body: some View {
-    LazyVStack(spacing: 6) {
+    LazyVStack(spacing: itemGap) {
       ForEach(Array(items.enumerated()), id: \.element.id) { (index, element) in
         let previous = index > 0 ? items[index - 1] : nil
         let next = index < items.count - 1 ? items[index + 1] : nil
