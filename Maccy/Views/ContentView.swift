@@ -9,22 +9,30 @@ struct ContentView: View {
 
   @Default(.backgroundOpacity) private var backgroundOpacity
 
+  @Environment(\.colorScheme) private var colorScheme
+
   @FocusState private var searchFocused: Bool
+
+  private var solidBackground: Color {
+    colorScheme == .dark ? Color(nsColor: .windowBackgroundColor) : .white
+  }
 
   var body: some View {
     ZStack {
-      Group {
-        #if compiler(>=6.2)
-        if #available(macOS 26.0, *) {
-          GlassEffectView()
-        } else {
-          VisualEffectView()
-        }
-        #else
+      #if compiler(>=6.2)
+      if #available(macOS 26.0, *) {
+        GlassEffectView()
+      } else {
         VisualEffectView()
-        #endif
       }
-      .opacity(backgroundOpacity)
+      #else
+      VisualEffectView()
+      #endif
+
+      // Solid backdrop over the blur: at 100% nothing behind the window
+      // shows through (pure white in light mode).
+      solidBackground
+        .opacity(backgroundOpacity)
 
       KeyHandlingView(searchQuery: $appState.history.searchQuery, searchFocused: $searchFocused) {
         VStack(spacing: 0) {
