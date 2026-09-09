@@ -55,10 +55,7 @@ struct ListItemView<Title: View, ID: Hashable>: View {
     selectionIndex.map { "\($0 + 1)" }
   }
 
-  private var backgroundColor: Color {
-    if isSelected {
-      return Color.accentColor.opacity(0.8)
-    }
+  private var stripeColor: Color {
     if let stripeIndex, !stripeIndex.isMultiple(of: 2) {
       return Color.primary.opacity(0.05)
     }
@@ -136,8 +133,15 @@ struct ListItemView<Title: View, ID: Hashable>: View {
     .id(id)
     .frame(maxWidth: .infinity, alignment: .leading)
     .foregroundStyle(isSelected ? Color.white : .primary)
-    .background(backgroundColor)
-    .clipShape(selectionAppearance.rect(cornerRadius: Popup.cornerRadius))
+    .background {
+      // Selection keeps rounded corners; the zebra stripe stays square.
+      if isSelected {
+        selectionAppearance.rect(cornerRadius: Popup.cornerRadius)
+          .fill(Color.accentColor.opacity(0.8))
+      } else {
+        stripeColor
+      }
+    }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(Text(accessibilityLabel))
     .accessibilityAddTraits(isSelected ? .isSelected : [])

@@ -17,7 +17,7 @@ struct MultipleSelectionListView<Element, ID, Content>: View
             .fill(Color.primary.opacity(0.08))
             .frame(height: 1)
             .padding(.horizontal, Popup.horizontalSeparatorPadding)
-            .padding(.vertical, 1)
+            .padding(.vertical, 3)
         }
       }
     }

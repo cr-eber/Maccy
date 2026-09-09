@@ -5,6 +5,8 @@ import Settings
 
 struct AppearanceSettingsPane: View {
   @Default(.appearanceMode) private var appearanceMode
+  @Default(.backgroundOpacity) private var backgroundOpacity
+  @Default(.maxItemLines) private var maxItemLines
   @Default(.popupPosition) private var popupAt
   @Default(.popupScreen) private var popupScreen
   @Default(.pinTo) private var pinTo
@@ -62,6 +64,30 @@ struct AppearanceSettingsPane: View {
         .frame(width: 180)
         .help(Text("AppearanceModeTooltip", tableName: "AppearanceSettings"))
         .accessibilityLabel(Text("AppearanceMode", tableName: "AppearanceSettings"))
+      }
+
+      Settings.Section(label: { Text("BackgroundOpacity", tableName: "AppearanceSettings") }) {
+        HStack {
+          Slider(value: $backgroundOpacity, in: 0.1...1.0)
+            .frame(width: 180)
+            .accessibilityLabel(Text("BackgroundOpacity", tableName: "AppearanceSettings"))
+          Text(verbatim: "\(Int(backgroundOpacity * 100))%")
+            .controlSize(.small)
+            .foregroundStyle(.gray)
+            .frame(width: 40, alignment: .leading)
+        }
+        .help(Text("BackgroundOpacityTooltip", tableName: "AppearanceSettings"))
+      }
+
+      Settings.Section(label: { Text("MaxItemLines", tableName: "AppearanceSettings") }) {
+        HStack {
+          Text(verbatim: "\(maxItemLines)")
+            .frame(width: 20, alignment: .leading)
+          Stepper("", value: $maxItemLines, in: 1...10)
+            .labelsHidden()
+            .accessibilityLabel(Text("MaxItemLines", tableName: "AppearanceSettings"))
+        }
+        .help(Text("MaxItemLinesTooltip", tableName: "AppearanceSettings"))
       }
 
       Settings.Section(label: { Text("PopupAt", tableName: "AppearanceSettings") }) {

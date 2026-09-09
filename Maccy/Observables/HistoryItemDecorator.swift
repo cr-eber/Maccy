@@ -182,6 +182,9 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   // part of a long item would otherwise be scrolled out of view.
   private static let matchContextBefore = 20
   private static let matchWindowLength = 500
+  // Rough estimate of how many characters fit on one row, used to decide
+  // whether the match is already visible without windowing.
+  private static let approxCharsPerLine = 60
 
   func highlight(_ query: String, _ ranges: [Range<String.Index>]) {
     guard !query.isEmpty, !title.isEmpty else {
@@ -191,11 +194,15 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
     // Window the title around the first match (à la Ditto) so the matched
     // part is always visible, marking cut-off sides with an ellipsis.
+    // Only window when the match would not fit into the visible rows.
+    let visibleCapacity = Defaults[.maxItemLines] * Self.approxCharsPerLine
     var windowStart = title.startIndex
     if let firstMatch = ranges.first,
-       firstMatch.lowerBound >= title.startIndex, firstMatch.lowerBound <= title.endIndex,
-       title.distance(from: title.startIndex, to: firstMatch.lowerBound) > Self.matchContextBefore {
-      windowStart = title.index(firstMatch.lowerBound, offsetBy: -Self.matchContextBefore)
+       firstMatch.lowerBound >= title.startIndex, firstMatch.upperBound <= title.endIndex,
+       title.distance(from: title.startIndex, to: firstMatch.upperBound) > visibleCapacity {
+      windowStart = title.index(
+        firstMatch.lowerBound, offsetBy: -Self.matchContextBefore, limitedBy: title.startIndex
+      ) ?? title.startIndex
     }
     let windowEnd = title.index(
       windowStart, offsetBy: Self.matchWindowLength, limitedBy: title.endIndex

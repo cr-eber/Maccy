@@ -31,6 +31,8 @@ extension Defaults.Keys {
     "enabledPasteboardTypes", default: Set(StorageType.all.types), suite: preferencesSuite
   )
   static let appearanceMode = Key<AppearanceMode>("appearanceMode", default: .system, suite: preferencesSuite)
+  static let backgroundOpacity = Key<Double>("backgroundOpacity", default: 1.0, suite: preferencesSuite)
+  static let maxItemLines = Key<Int>("maxItemLines", default: 3, suite: preferencesSuite)
   static let highlightMatch = Key<HighlightMatch>("highlightMatch", default: .color, suite: preferencesSuite)
   static let ignoreAllAppsExceptListed = Key<Bool>("ignoreAllAppsExceptListed", default: false, suite: preferencesSuite)
   static let ignoreEvents = Key<Bool>("ignoreEvents", default: false, suite: preferencesSuite)

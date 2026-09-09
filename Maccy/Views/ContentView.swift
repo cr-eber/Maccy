@@ -1,3 +1,4 @@
+import Defaults
 import SwiftData
 import SwiftUI
 
@@ -6,19 +7,24 @@ struct ContentView: View {
   @State private var modifierFlags = ModifierFlags()
   @State private var scenePhase: ScenePhase = .background
 
+  @Default(.backgroundOpacity) private var backgroundOpacity
+
   @FocusState private var searchFocused: Bool
 
   var body: some View {
     ZStack {
-      #if compiler(>=6.2)
-      if #available(macOS 26.0, *) {
-        GlassEffectView()
-      } else {
+      Group {
+        #if compiler(>=6.2)
+        if #available(macOS 26.0, *) {
+          GlassEffectView()
+        } else {
+          VisualEffectView()
+        }
+        #else
         VisualEffectView()
+        #endif
       }
-      #else
-      VisualEffectView()
-      #endif
+      .opacity(backgroundOpacity)
 
       KeyHandlingView(searchQuery: $appState.history.searchQuery, searchFocused: $searchFocused) {
         VStack(spacing: 0) {
