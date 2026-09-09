@@ -8,7 +8,7 @@ struct SearchFieldView: View {
 
   var body: some View {
     ZStack {
-      RoundedRectangle(cornerRadius: Popup.cornerRadius, style: .continuous)
+      Rectangle()
         .fill(Color.secondary)
         .opacity(0.1)
         .frame(height: 30)
@@ -34,13 +34,14 @@ struct SearchFieldView: View {
           } label: {
             Image(systemName: "xmark.circle.fill")
               .frame(width: 11, height: 11)
-              .padding(.trailing, 5)
           }
           .buttonStyle(.plain)
           .opacity(0.9)
           .accessibilityLabel(Text("search_clear_accessibility_label"))
         }
       }
+      // Keep the input clear of the settings icon overlaid at the trailing edge.
+      .padding(.trailing, 30)
     }
   }
 }

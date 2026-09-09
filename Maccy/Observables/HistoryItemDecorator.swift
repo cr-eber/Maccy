@@ -187,6 +187,40 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   // whether the match is already visible without windowing.
   private static let approxCharsPerLine = 60
 
+  // Highlight every occurrence of the query in the given text using the
+  // configured highlight style. Used by the preview pane.
+  static func highlightAll(of query: String, in text: String) -> AttributedString {
+    var attributed = AttributedString(text)
+    guard !query.isEmpty else { return attributed }
+
+    var searchStart = text.startIndex
+    while searchStart < text.endIndex,
+          let match = text.range(
+            of: query, options: .caseInsensitive, range: searchStart..<text.endIndex
+          ) {
+      if let lower = AttributedString.Index(match.lowerBound, within: attributed),
+         let upper = AttributedString.Index(match.upperBound, within: attributed) {
+        switch Defaults[.highlightMatch] {
+        case .bold:
+          attributed[lower..<upper].font = .bold(.body)()
+        case .italic:
+          attributed[lower..<upper].font = .italic(.body)()
+        case .underline:
+          attributed[lower..<upper].underlineStyle = .single
+        case .coloredText:
+          attributed[lower..<upper].foregroundColor =
+            NSColor(hexString: Defaults[.highlightMatchColor]) ?? NSColor(hexString: "#D45247")
+        default:
+          attributed[lower..<upper].backgroundColor = .findHighlightColor
+          attributed[lower..<upper].foregroundColor = .black
+        }
+      }
+      searchStart = match.upperBound
+    }
+
+    return attributed
+  }
+
   func highlight(_ query: String, _ ranges: [Range<String.Index>]) {
     guard !query.isEmpty, !title.isEmpty else {
       attributedTitle = nil

@@ -10,12 +10,12 @@ struct HeaderView: View {
 
   var body: some View {
     HStack(alignment: .top, spacing: 0) {
-      HStack(alignment: .center, spacing: 0) {
+      // The settings icon overlays the trailing edge of the full-width search box.
+      ZStack(alignment: .trailing) {
         ListHeaderView(
           searchFocused: $searchFocused,
           searchQuery: $appState.history.searchQuery
         )
-        .padding(.trailing, Popup.horizontalPadding)
 
         ToolbarButton {
           settingsMenuShown.toggle()
@@ -32,7 +32,7 @@ struct HeaderView: View {
           .padding(6)
           .frame(width: 220)
         }
-        .padding(.trailing, Popup.horizontalPadding)
+        .padding(.trailing, 8)
       }
       .opacity(appState.searchVisible ? 1 : 0)
       .accessibilityHidden(!appState.searchVisible)

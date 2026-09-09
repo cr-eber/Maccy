@@ -1,5 +1,7 @@
 import AppKit
+import Defaults
 import KeyboardShortcuts
+import SwiftHEXColors
 import SwiftUI
 
 struct PreviewItemView: View {
@@ -54,12 +56,13 @@ struct PreviewItemView: View {
         }
       } else {
         let text = item.previewText
+        let query = AppState.shared.history.searchQuery
         if text.count >= Self.largeTextThreshold {
-          LargeTextPreviewView(text: text)
+          LargeTextPreviewView(text: text, query: query)
             .id("textpreview-\(item.id)")
         } else {
           ScrollView {
-            Text(text)
+            Text(HistoryItemDecorator.highlightAll(of: query, in: text))
               .font(.body)
               .frame(maxWidth: .infinity, alignment: .leading)
           }
@@ -113,17 +116,74 @@ struct PreviewItemView: View {
 
 struct LargeTextPreviewView: NSViewRepresentable {
   let text: String
+  var query: String = ""
 
   func makeNSView(context: Context) -> NSScrollView {
-    return Self.makeScrollView(text: text)
+    let scrollView = Self.makeScrollView(text: text)
+    if let textView = scrollView.documentView as? NSTextView {
+      Self.highlightMatches(of: query, in: textView)
+    }
+    return scrollView
   }
 
   func updateNSView(_ scrollView: NSScrollView, context: Context) {
-    guard let textView = scrollView.documentView as? NSTextView, textView.string != text else {
+    guard let textView = scrollView.documentView as? NSTextView else {
       return
     }
 
-    textView.string = text
+    if textView.string != text {
+      textView.string = text
+    }
+    Self.highlightMatches(of: query, in: textView)
+  }
+
+  static func highlightMatches(of query: String, in textView: NSTextView) {
+    guard let storage = textView.textStorage else { return }
+
+    let fullRange = NSRange(location: 0, length: storage.length)
+    storage.removeAttribute(.backgroundColor, range: fullRange)
+    storage.removeAttribute(.underlineStyle, range: fullRange)
+    storage.addAttribute(.foregroundColor, value: NSColor.labelColor, range: fullRange)
+    storage.addAttribute(
+      .font, value: NSFont.systemFont(ofSize: NSFont.systemFontSize), range: fullRange
+    )
+
+    guard !query.isEmpty else { return }
+
+    let string = storage.string as NSString
+    var location = 0
+    while location < string.length {
+      let found = string.range(
+        of: query,
+        options: .caseInsensitive,
+        range: NSRange(location: location, length: string.length - location)
+      )
+      guard found.location != NSNotFound, found.length > 0 else { break }
+
+      switch Defaults[.highlightMatch] {
+      case .bold:
+        storage.addAttribute(
+          .font, value: NSFont.boldSystemFont(ofSize: NSFont.systemFontSize), range: found
+        )
+      case .italic:
+        let italic = NSFontManager.shared.convert(
+          NSFont.systemFont(ofSize: NSFont.systemFontSize), toHaveTrait: .italicFontMask
+        )
+        storage.addAttribute(.font, value: italic, range: found)
+      case .underline:
+        storage.addAttribute(
+          .underlineStyle, value: NSUnderlineStyle.single.rawValue, range: found
+        )
+      case .coloredText:
+        let color = NSColor(hexString: Defaults[.highlightMatchColor]) ?? .systemRed
+        storage.addAttribute(.foregroundColor, value: color, range: found)
+      default:
+        storage.addAttribute(.backgroundColor, value: NSColor.findHighlightColor, range: found)
+        storage.addAttribute(.foregroundColor, value: NSColor.black, range: found)
+      }
+
+      location = found.location + found.length
+    }
   }
 
   static func makeScrollView(text: String) -> NSScrollView {
