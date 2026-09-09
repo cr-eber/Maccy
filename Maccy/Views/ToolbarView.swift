@@ -72,20 +72,12 @@ struct ToolbarButton<Label: View>: View {
 
 struct ToolbarView: View {
   @State private var appState = AppState.shared
+  @Default(.previewPinned) private var previewPinned
 
   @Namespace var unionNamespace
 
   enum Section: Hashable {
     case itemOptions
-  }
-
-  private var shouldUnpin: Bool {
-    return appState.navigator.selection.items.allSatisfy { $0.isPinned }
-  }
-
-  private var pinActionDisabled: Bool {
-    return appState.navigator.selection.items.contains { $0.isPinned }
-      && appState.navigator.selection.items.contains { !$0.isPinned }
   }
 
   private var selectedImageItem: HistoryItemDecorator? {
@@ -124,23 +116,16 @@ struct ToolbarView: View {
         }
 
         ToolbarButton {
-          withAnimation {
-            appState.togglePin()
-          }
+          appState.togglePin()
         } label: {
-          if (appState.navigator.selection.items.allSatisfy { $0.isPinned }) {
-            Image(systemName: "pin.slash")
-          } else {
-            Image(systemName: "pin")
-          }
+          Image(systemName: previewPinned ? "pin.fill" : "pin")
         }
         .shortcutKeyHelp(
           name: .pin,
-          key: shouldUnpin ? "UnpinKey" : "PinKey",
+          key: previewPinned ? "UnpinKey" : "PinKey",
           tableName: "PreviewItemView",
           replacementKey: "pinKey"
         )
-        .disabled(pinActionDisabled)
 
         ToolbarButton {
           appState.deleteSelection()

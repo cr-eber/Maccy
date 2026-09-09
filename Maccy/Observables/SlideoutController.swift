@@ -223,10 +223,24 @@ class SlideoutController {
   func startAutoOpen() {
     cancelAutoOpen()
 
-    guard Defaults[.openPreviewAutomatically] else { return }
     guard autoOpenEnabled else { return }
-    guard !autoOpenSuppressed else { return }
     guard !state.isOpen else { return }
+
+    // A pinned preview always opens with the popup, without delay.
+    if Defaults[.previewPinned] {
+      autoOpenTask = Task { @MainActor in
+        try? await Task.sleep(for: .milliseconds(50))
+        guard !Task.isCancelled else { return }
+
+        if !state.isOpen {
+          togglePreview(trigger: .autoOpen)
+        }
+      }
+      return
+    }
+
+    guard Defaults[.openPreviewAutomatically] else { return }
+    guard !autoOpenSuppressed else { return }
 
     autoOpenTask = Task { @MainActor in
       try? await Task.sleep(for: .milliseconds(Defaults[.previewDelay]))

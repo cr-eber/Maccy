@@ -73,12 +73,13 @@ class AppState: Sendable {
     }
   }
 
+  // Pin now pins the preview pane: while pinned, the preview opens
+  // automatically every time the popup is shown.
   @MainActor
   func togglePin() {
-    withTransaction(Transaction()) {
-      navigator.selection.forEach { _, item in
-        history.togglePin(item)
-      }
+    Defaults[.previewPinned].toggle()
+    if Defaults[.previewPinned] != preview.state.isOpen {
+      preview.togglePreview()
     }
   }
 
