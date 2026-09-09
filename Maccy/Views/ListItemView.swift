@@ -152,8 +152,12 @@ struct ListItemView<Title: View, ID: Hashable>: View {
     }
     // Only history rows (striped) get the uniform multi-line height;
     // footer and paste stack rows keep the compact single-line height.
-    .frame(height: stripeIndex != nil ? Popup.itemHeight(lines: maxItemLines) : nil)
-    .frame(minHeight: Popup.itemHeight)
+    // Top alignment keeps text, icons, and images at the row's top.
+    .frame(
+      height: stripeIndex != nil ? Popup.itemHeight(lines: maxItemLines) : nil,
+      alignment: .top
+    )
+    .frame(minHeight: Popup.itemHeight, alignment: .top)
     .clipped()
     .id(id)
     .frame(maxWidth: .infinity, alignment: .leading)
