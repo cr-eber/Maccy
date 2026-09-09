@@ -186,6 +186,10 @@ struct AppearanceSettingsPane: View {
         Defaults.Toggle(key: .openPreviewAutomatically) {
           Text("OpenPreviewAutomatically", tableName: "AppearanceSettings")
         }
+        Defaults.Toggle(key: .previewPinned) {
+          Text("PinPreview", tableName: "AppearanceSettings")
+        }
+        .help(Text("PinPreviewTooltip", tableName: "AppearanceSettings"))
       }
 
       Settings.Section(label: { Text("PreviewDelay", tableName: "AppearanceSettings") }) {
