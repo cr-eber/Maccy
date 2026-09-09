@@ -1,4 +1,5 @@
 import Defaults
+import SwiftHEXColors
 import SwiftUI
 
 enum SelectionAppearance {
@@ -47,6 +48,7 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   @ViewBuilder var title: () -> Title
 
   @Default(.maxItemLines) private var maxItemLines
+  @Default(.selectionColor) private var selectionColor
   @Default(.showApplicationIcons) private var showIcons
   @Environment(AppState.self) private var appState
   @Environment(ModifierFlags.self) private var modifierFlags
@@ -65,16 +67,23 @@ struct ListItemView<Title: View, ID: Hashable>: View {
     return Color.white.opacity(0.001)
   }
 
+  private var selectionNSColor: NSColor {
+    NSColor(hexString: selectionColor) ?? .controlAccentColor
+  }
+
+  // Black text on light selection colors, white text on dark ones.
+  private var selectedForeground: Color {
+    let srgb = selectionNSColor.usingColorSpace(.sRGB) ?? .white
+    let luminance = 0.299 * srgb.redComponent + 0.587 * srgb.greenComponent + 0.114 * srgb.blueComponent
+    return luminance < 0.5 ? .white : .black
+  }
+
   var body: some View {
-    HStack(spacing: 0) {
+    HStack(alignment: .top, spacing: 0) {
       if showIcons, let appIcon {
-        VStack {
-          Spacer(minLength: 0)
-          AppImageView(appImage: appIcon, size: NSSize(width: 15, height: 15))
-          Spacer(minLength: 0)
-        }
-        .padding(.leading, 4)
-        .padding(.vertical, 5)
+        AppImageView(appImage: appIcon, size: NSSize(width: 15, height: 15))
+          .padding(.leading, 4)
+          .padding(.top, Popup.itemVerticalInset + 1)
       }
 
       Spacer()
@@ -85,7 +94,7 @@ struct ListItemView<Title: View, ID: Hashable>: View {
           .accessibilityIdentifier("copy-history-item")
           .accessibilityHidden(true)
           .padding(.trailing, 5)
-          .padding(.vertical, 5)
+          .padding(.top, Popup.itemVerticalInset)
       }
 
       if let image {
@@ -146,12 +155,12 @@ struct ListItemView<Title: View, ID: Hashable>: View {
     .clipped()
     .id(id)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .foregroundStyle(isSelected ? Color.white : .primary)
+    .foregroundStyle(isSelected ? selectedForeground : .primary)
     .background {
       // Selection keeps rounded corners; the zebra stripe stays square.
       if isSelected {
         selectionAppearance.rect(cornerRadius: Popup.cornerRadius)
-          .fill(Color.accentColor.opacity(0.8))
+          .fill(Color(nsColor: selectionNSColor))
       } else {
         stripeColor
       }

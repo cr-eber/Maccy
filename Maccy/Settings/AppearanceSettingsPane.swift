@@ -17,13 +17,14 @@ struct AppearanceSettingsPane: View {
   @Default(.previewDelay) private var previewDelay
   @Default(.highlightMatch) private var highlightMatch
   @Default(.highlightMatchColor) private var highlightMatchColor
+  @Default(.selectionColor) private var selectionColor
 
-  private var highlightColorBinding: Binding<Color> {
+  private func hexColorBinding(_ hex: Binding<String>) -> Binding<Color> {
     Binding {
-      Color(nsColor: NSColor(hexString: highlightMatchColor) ?? .systemRed)
+      Color(nsColor: NSColor(hexString: hex.wrappedValue) ?? .gray)
     } set: { newValue in
       guard let srgb = NSColor(newValue).usingColorSpace(.sRGB) else { return }
-      highlightMatchColor = String(
+      hex.wrappedValue = String(
         format: "#%02X%02X%02X",
         Int(round(srgb.redComponent * 255)),
         Int(round(srgb.greenComponent * 255)),
@@ -120,6 +121,13 @@ struct AppearanceSettingsPane: View {
         .help(Text("ItemGapTooltip", tableName: "AppearanceSettings"))
       }
 
+      Settings.Section(label: { Text("SelectionColor", tableName: "AppearanceSettings") }) {
+        ColorPicker("", selection: hexColorBinding($selectionColor), supportsOpacity: false)
+          .labelsHidden()
+          .help(Text("SelectionColorTooltip", tableName: "AppearanceSettings"))
+          .accessibilityLabel(Text("SelectionColor", tableName: "AppearanceSettings"))
+      }
+
       Settings.Section(label: { Text("PopupAt", tableName: "AppearanceSettings") }) {
         HStack {
           Picker("", selection: $popupAt) {
@@ -209,7 +217,7 @@ struct AppearanceSettingsPane: View {
           .accessibilityLabel(Text("HighlightMatches", tableName: "AppearanceSettings"))
 
           if highlightMatch == .coloredText {
-            ColorPicker("", selection: highlightColorBinding, supportsOpacity: false)
+            ColorPicker("", selection: hexColorBinding($highlightMatchColor), supportsOpacity: false)
               .labelsHidden()
               .accessibilityLabel(Text("HighlightMatchColoredText", tableName: "AppearanceSettings"))
           }

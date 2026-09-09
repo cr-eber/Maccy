@@ -10,6 +10,8 @@
 "MaxItemLinesTooltip" = "Maximum number of text rows shown per history item.\nDefault: 3.";
 "ItemGap" = "Gap between items:";
 "ItemGapTooltip" = "Vertical space between history items in points.\nDefault: 10.";
+"SelectionColor" = "Selection color:";
+"SelectionColorTooltip" = "Background color of the selected history item.\nDefault: light gray.";
 "PopupAt" = "Popup at:";
 "PopupAtCursor" = "Cursor";
 "PopupAtMenuBarIcon" = "Menu icon";

@@ -7,9 +7,15 @@ class ColorImage {
       return nil
     }
 
-    let image = NSImage(size: NSSize(width: 12, height: 12))
+    let size = NSSize(width: 16, height: 16)
+    let image = NSImage(size: size)
     image.lockFocus()
-    color.drawSwatch(in: NSRect(x: 0, y: 0, width: 12, height: 12))
+    let rect = NSRect(origin: .zero, size: size).insetBy(dx: 0.5, dy: 0.5)
+    let path = NSBezierPath(roundedRect: rect, xRadius: 4, yRadius: 4)
+    color.setFill()
+    path.fill()
+    NSColor.black.withAlphaComponent(0.2).setStroke()
+    path.stroke()
     image.unlockFocus()
 
     return image

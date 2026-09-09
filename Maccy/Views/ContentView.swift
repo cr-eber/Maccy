@@ -55,7 +55,6 @@ struct ContentView: View {
               .default.speed(3),
               value: appState.history.pasteStack?.id
             )
-            .padding(.horizontal, Popup.horizontalPadding)
             .onAppear {
               searchFocused = true
             }
