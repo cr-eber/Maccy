@@ -9,6 +9,8 @@ struct GeneralSettingsPane: View {
     string: "x-apple.systempreferences:com.apple.preference.notifications?id=\(Bundle.main.bundleIdentifier ?? "")"
   )
 
+  @Default(.searchMode) private var searchMode
+
   @State private var copyModifier = HistoryItemAction.copy.modifierFlags.description
   @State private var pasteModifier = HistoryItemAction.paste.modifierFlags.description
   @State private var pasteWithoutFormatting = HistoryItemAction.pasteWithoutFormatting.modifierFlags.description
@@ -62,6 +64,20 @@ struct GeneralSettingsPane: View {
         KeyboardShortcuts.Recorder(for: .togglePreview)
           .help(Text("ShowPreviewTooltip", tableName: "GeneralSettings"))
           .accessibilityLabel(Text("ShowPreview", tableName: "GeneralSettings"))
+      }
+
+      Settings.Section(
+        bottomDivider: true,
+        label: { Text("Search", tableName: "GeneralSettings") }
+      ) {
+        Picker("", selection: $searchMode) {
+          ForEach(Search.Mode.allCases) { mode in
+            Text(mode.description)
+          }
+        }
+        .labelsHidden()
+        .accessibilityLabel(Text("Search", tableName: "GeneralSettings"))
+        .frame(width: 180, alignment: .leading)
       }
 
       Settings.Section(

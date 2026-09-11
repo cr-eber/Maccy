@@ -153,13 +153,13 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       // It was already inserted after creation in Clipboard.swift
     }
 
-    // Only in-place modifications (an app rewriting its last copy) are merged
-    // synchronously — an O(1) session-log lookup. Regular duplicates are found
-    // and merged lazily after the copy so a large history never delays it.
     var removedItemIndex: Int?
-    if let existingHistoryItem = isModified(item) {
-      // The replaced model is deleted below; abort in-flight dedup scans.
-      dedupGeneration += 1
+    if let existingHistoryItem = findSimilarItem(item) {
+      // Only reuse old contents for exact duplicates; a text duplicate with
+      // different formats keeps the latest copy's formats.
+      if isModified(item) == nil && existingHistoryItem.supersedes(item) {
+        transferContents(from: existingHistoryItem, to: item)
+      }
       item.firstCopiedAt = existingHistoryItem.firstCopiedAt
       item.numberOfCopies += existingHistoryItem.numberOfCopies
       item.pin = existingHistoryItem.pin
@@ -178,11 +178,8 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
         all.remove(at: removedItemIndex)
       }
     } else {
-      // Capture the title now: the model may be merged away and deleted
-      // by lazy deduplication before this task runs.
-      let title = item.title
       Task {
-        Notifier.notify(body: title, sound: .write)
+        Notifier.notify(body: item.title, sound: .write)
       }
     }
 
@@ -211,150 +208,9 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       items = all
       updateUnpinnedShortcuts()
       AppState.shared.popup.needsResize = true
-
-      scheduleDeduplication(of: itemDecorator)
     }
 
     return itemDecorator
-  }
-
-  // MARK: - Lazy deduplication
-
-  // Deduplication runs after the copy has already landed in the history so the
-  // copy path stays O(1) even with tens of thousands of items. Tasks are
-  // chained to run one at a time; tests await `dedupTask`.
-  @ObservationIgnored
-  private(set) var dedupTask: Task<Void, Never>?
-
-  // Bumped whenever the whole history is replaced (load/clear) so in-flight
-  // scans abort instead of touching deleted models.
-  @ObservationIgnored
-  private var dedupGeneration = 0
-
-  @MainActor
-  private func scheduleDeduplication(of decorator: HistoryItemDecorator) {
-    dedupTask = Task(priority: .utility) { [previousTask = dedupTask] in
-      await previousTask?.value
-      await self.deduplicate(decorator)
-    }
-  }
-
-  @MainActor
-  private func deduplicate(_ decorator: HistoryItemDecorator) async {
-    let item = decorator.item
-    let generation = dedupGeneration
-
-    // Resolve the row by its model: a reload recreates all decorators, but
-    // the underlying items stay the same. A missing row was deleted or
-    // already merged — its model must not be touched then.
-    guard let position = all.firstIndex(where: { $0.item === item }) else {
-      return
-    }
-
-    let text = item.text
-
-    // Only rows older than (after) the fresh copy are candidates, so two
-    // pending scans can never fold the same pair in opposite directions.
-    var duplicateItem: HistoryItem?
-    var scanned = 0
-    for candidate in all[(position + 1)...] {
-      // Yield periodically so a long scan never blocks the UI.
-      if scanned.isMultiple(of: 512) {
-        await Task.yield()
-        guard generation == dedupGeneration else {
-          return
-        }
-      }
-      scanned += 1
-
-      let candidateItem = candidate.item
-      guard candidateItem !== item else { continue }
-
-      if let text, !text.isEmpty {
-        if candidateItem.text == text {
-          duplicateItem = candidateItem
-          break
-        }
-      } else if candidateItem.supersedes(item) {
-        duplicateItem = candidateItem
-        break
-      }
-    }
-
-    // Re-resolve both rows — either may have been deleted, merged, or had
-    // its decorator recreated while the scan was yielding.
-    guard generation == dedupGeneration,
-          let duplicateItem,
-          let fresh = all.first(where: { $0.item === item }),
-          let old = all.first(where: { $0.item === duplicateItem }),
-          fresh != old else {
-      return
-    }
-
-    merge(old, into: fresh)
-  }
-
-  // Folds the older duplicate row into the freshly copied one — the same
-  // semantics the upstream synchronous dedup had: the fresh copy survives
-  // at the top and inherits the old row's pin, mask, title and history.
-  @MainActor
-  private func merge(_ oldDecorator: HistoryItemDecorator, into survivor: HistoryItemDecorator) {
-    let oldItem = oldDecorator.item
-    let newItem = survivor.item
-
-    // Exact duplicates reuse the stored contents; a text duplicate with
-    // different formats keeps the latest copy's formats.
-    if oldItem.supersedes(newItem) {
-      deleteContents(of: newItem)
-      newItem.contents = oldItem.contents
-      oldItem.contents = []
-    }
-
-    newItem.firstCopiedAt = min(oldItem.firstCopiedAt, newItem.firstCopiedAt)
-    newItem.lastCopiedAt = max(oldItem.lastCopiedAt, newItem.lastCopiedAt)
-    newItem.numberOfCopies += oldItem.numberOfCopies
-    newItem.pin = oldItem.pin
-    newItem.masked = newItem.masked || oldItem.masked
-    newItem.title = oldItem.title
-    if !newItem.fromMaccy {
-      newItem.application = oldItem.application
-    }
-    survivor.title = newItem.title
-    survivor.isMasked = newItem.masked
-
-    for (key, value) in sessionLog where value === oldItem {
-      sessionLog[key] = newItem
-    }
-
-    cleanup(oldDecorator)
-    withLogging("Merging duplicate item") {
-      deleteFromStorage(oldItem)
-      Storage.shared.context.processPendingChanges()
-      try? Storage.shared.context.save()
-    }
-    all.removeAll { $0.item === oldItem }
-    items.removeAll { $0.item === oldItem }
-
-    // An inherited pin brings the shortcut along and may re-sort the row.
-    if let pin = newItem.pin {
-      survivor.shortcuts = KeyShortcut.create(character: pin)
-      let sortedItems = sorter.sort(all.map(\.item))
-      if let currentIndex = all.firstIndex(of: survivor),
-         let newIndex = sortedItems.firstIndex(of: newItem) {
-        all.remove(at: currentIndex)
-        all.insert(survivor, at: min(newIndex, all.count))
-      }
-    }
-
-    if searchQuery.isEmpty {
-      items = all
-    } else {
-      // Re-run the active search so the merged row lands in the right place.
-      searchQuery = searchQuery
-    }
-
-    updateUnpinnedShortcuts()
-    AppState.shared.popup.needsResize = true
   }
 
   @MainActor
@@ -372,7 +228,6 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
   @MainActor
   func clear() {
-    dedupGeneration += 1
     withLogging("Clearing history") {
       all.forEach { item in
         if item.isUnpinned {
@@ -406,7 +261,6 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
   @MainActor
   func clearAll() {
-    dedupGeneration += 1
     withLogging("Clearing all history") {
       all.forEach { item in
         cleanup(item)
@@ -444,9 +298,6 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
   func delete(_ item: HistoryItemDecorator?) {
     guard let item else { return }
 
-    // Abort in-flight dedup scans so they never touch the deleted model.
-    dedupGeneration += 1
-
     cleanup(item)
     withLogging("Removing history item") {
       deleteFromStorage(item.item)
@@ -462,6 +313,13 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     Task {
       AppState.shared.popup.needsResize = true
     }
+  }
+
+  @MainActor
+  private func transferContents(from existingItem: HistoryItem, to newItem: HistoryItem) {
+    deleteContents(of: newItem)
+    newItem.contents = existingItem.contents
+    existingItem.contents = []
   }
 
   @MainActor
@@ -626,6 +484,28 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     if item.isUnpinned {
       AppState.shared.navigator.scrollTarget = item.id
     }
+  }
+
+  @MainActor
+  private func findSimilarItem(_ item: HistoryItem) -> HistoryItem? {
+    if let duplicate = all.first(where: {
+      $0.item != item && ($0.item.supersedes(item) || Self.samePlainText($0.item, item))
+    }) {
+      return duplicate.item
+    }
+
+    return isModified(item)
+  }
+
+  // Items with identical plain text are duplicates even when their other
+  // formats (RTF, HTML, source metadata) differ between applications.
+  private static func samePlainText(_ lhs: HistoryItem, _ rhs: HistoryItem) -> Bool {
+    guard let lhsText = lhs.text, let rhsText = rhs.text,
+          !lhsText.isEmpty, !rhsText.isEmpty else {
+      return false
+    }
+
+    return lhsText == rhsText
   }
 
   private func isModified(_ item: HistoryItem) -> HistoryItem? {

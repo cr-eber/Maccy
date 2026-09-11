@@ -35,7 +35,7 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     XCTAssertEqual(history.items, [second, first])
   }
 
-  func testAddingPersistedDuplicate() async throws {
+  func testAddingPersistedDuplicate() throws {
     let first = historyItem("foo")
     first.title = "xyz"
     first.application = "iTerm.app"
@@ -45,21 +45,19 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     let third = historyItem("foo")
     third.application = "Xcode.app"
     let transferredContents = first.contents
-    history.add(third)
-    await history.dedupTask?.value
+    let merged = history.add(third)
 
-    // The fresh copy survives the lazy merge, inheriting pin/title/application.
-    XCTAssertEqual(history.all.map(\.item), [third])
-    XCTAssertEqual(Set(third.contents), Set(transferredContents))
-    XCTAssertTrue(third.lastCopiedAt > third.firstCopiedAt)
-    XCTAssertEqual(third.numberOfCopies, 2)
-    XCTAssertEqual(third.pin, "f")
-    XCTAssertEqual(third.title, "xyz")
-    XCTAssertEqual(third.application, "iTerm.app")
+    XCTAssertEqual(history.all, [merged])
+    XCTAssertEqual(Set(merged.item.contents), Set(transferredContents))
+    XCTAssertTrue(merged.item.lastCopiedAt > merged.item.firstCopiedAt)
+    XCTAssertEqual(merged.item.numberOfCopies, 2)
+    XCTAssertEqual(merged.item.pin, "f")
+    XCTAssertEqual(merged.item.title, "xyz")
+    XCTAssertEqual(merged.item.application, "iTerm.app")
     try assertStorageCounts(items: 1, contents: 1)
   }
 
-  func testAddingUnsavedDuplicate() async throws {
+  func testAddingUnsavedDuplicate() throws {
     guard #available(macOS 15.0, *) else {
       throw XCTSkip("Incoming history items are inserted before add on macOS 14")
     }
@@ -73,20 +71,19 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     let second = historyItem("foo", persisted: false)
     second.application = "Xcode.app"
     let transferredContents = first.contents
-    history.add(second)
-    await history.dedupTask?.value
+    let merged = history.add(second)
 
-    XCTAssertEqual(history.all.map(\.item), [second])
-    XCTAssertEqual(Set(second.contents), Set(transferredContents))
-    XCTAssertTrue(second.lastCopiedAt > second.firstCopiedAt)
-    XCTAssertEqual(second.numberOfCopies, 2)
-    XCTAssertEqual(second.pin, "f")
-    XCTAssertEqual(second.title, "xyz")
-    XCTAssertEqual(second.application, "iTerm.app")
+    XCTAssertEqual(history.all, [merged])
+    XCTAssertEqual(Set(merged.item.contents), Set(transferredContents))
+    XCTAssertTrue(merged.item.lastCopiedAt > merged.item.firstCopiedAt)
+    XCTAssertEqual(merged.item.numberOfCopies, 2)
+    XCTAssertEqual(merged.item.pin, "f")
+    XCTAssertEqual(merged.item.title, "xyz")
+    XCTAssertEqual(merged.item.application, "iTerm.app")
     try assertStorageCounts(items: 1, contents: 1)
   }
 
-  func testAddingItemThatIsSupersededByExisting() async throws {
+  func testAddingItemThatIsSupersededByExisting() throws {
     let firstContents = [
       HistoryItemContent(
         type: NSPasteboard.PasteboardType.string.rawValue,
@@ -115,16 +112,14 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     secondItem.application = "Maccy.app"
     secondItem.contents = secondContents
     secondItem.title = secondItem.generateTitle()
-    history.add(secondItem)
-    await history.dedupTask?.value
+    let second = history.add(secondItem)
 
-    // The fresh copy survives, taking over the richer stored contents.
-    XCTAssertEqual(history.items.map(\.item), [secondItem])
-    XCTAssertEqual(Set(secondItem.contents), Set(firstContents))
+    XCTAssertEqual(history.items, [second])
+    XCTAssertEqual(Set(history.items[0].item.contents), Set(firstContents))
     try assertStorageCounts(items: 1, contents: firstContents.count)
   }
 
-  func testAddingItemWithDifferentModifiedType() async {
+  func testAddingItemWithDifferentModifiedType() {
     let firstContents = [
       HistoryItemContent(
         type: NSPasteboard.PasteboardType.string.rawValue,
@@ -153,14 +148,13 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     let secondItem = HistoryItem()
     Storage.shared.context.insert(secondItem)
     secondItem.contents = secondContents
-    history.add(secondItem)
-    await history.dedupTask?.value
+    let second = history.add(secondItem)
 
-    XCTAssertEqual(history.items.map(\.item), [secondItem])
-    XCTAssertEqual(Set(secondItem.contents), Set(firstContents))
+    XCTAssertEqual(history.items, [second])
+    XCTAssertEqual(Set(history.items[0].item.contents), Set(firstContents))
   }
 
-  func testAddingItemFromMaccy() async {
+  func testAddingItemFromMaccy() {
     let firstContents = [
       HistoryItemContent(
         type: NSPasteboard.PasteboardType.string.rawValue,
@@ -187,12 +181,11 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     Storage.shared.context.insert(second)
     second.application = "Maccy.app"
     second.contents = secondContents
-    history.add(second)
-    await history.dedupTask?.value
+    let secondDecorator = history.add(second)
 
-    XCTAssertEqual(history.items.map(\.item), [second])
-    XCTAssertEqual(second.application, "Xcode.app")
-    XCTAssertEqual(Set(second.contents), Set(firstContents))
+    XCTAssertEqual(history.items, [secondDecorator])
+    XCTAssertEqual(history.items[0].item.application, "Xcode.app")
+    XCTAssertEqual(Set(history.items[0].item.contents), Set(firstContents))
   }
 
   func testModifiedAfterCopying() {
@@ -284,7 +277,7 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     XCTAssertFalse(history.items.contains(items[5]))
   }
 
-  func testReaddingBottomMostPinnedItemAtFullCapacity() async {
+  func testReaddingBottomMostPinnedItemAtFullCapacity() {
     // Regression test for a crash when re-copying (invoking) the bottom-most
     // pinned item while history is at full capacity and pins are sorted to the
     // bottom. The stale insert index used to trap with an out-of-bounds insert.
@@ -304,14 +297,13 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
 
     XCTAssertEqual(history.all.last, pinned)
 
-    // Re-copy the pinned item. It lands as a fresh row while `limitHistorySize`
-    // trims an exceeding unpinned item, then lazily merges into the pinned row.
+    // Re-copy the pinned item. It is detected as a duplicate, removed and
+    // re-inserted while `limitHistorySize` trims an exceeding unpinned item.
+    // Before the fix this inserted at a stale, out-of-bounds index and crashed.
     let readded = history.add(historyItem("pinned"))
-    await history.dedupTask?.value
 
-    XCTAssertTrue(history.all.map(\.item).contains(readded.item))
+    XCTAssertTrue(history.all.contains(readded))
     XCTAssertEqual(history.all.filter(\.isPinned).count, 1)
-    XCTAssertEqual(readded.item.numberOfCopies, 2)
   }
 
   func testRemoving() throws {
