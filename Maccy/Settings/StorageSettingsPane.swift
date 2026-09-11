@@ -67,7 +67,7 @@ struct StorageSettingsPane: View {
   private let sizeFormatter: NumberFormatter = {
     let formatter = NumberFormatter()
     formatter.minimum = 1
-    formatter.maximum = 50_000
+    formatter.maximum = 100_000
     return formatter
   }()
 
@@ -100,7 +100,7 @@ struct StorageSettingsPane: View {
             .frame(width: 80)
             .help(Text("SizeTooltip", tableName: "StorageSettings"))
             .accessibilityLabel(Text("Size", tableName: "StorageSettings"))
-          Stepper("", value: $size, in: 1...50_000)
+          Stepper("", value: $size, in: 1...100_000)
             .labelsHidden()
             .accessibilityLabel(Text("Size", tableName: "StorageSettings"))
           Text(storageSize)

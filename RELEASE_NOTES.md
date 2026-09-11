@@ -18,7 +18,7 @@ action in a bottom menu. This fork fixes all of that.
 - **The preview highlights every match** of the search query too, not just the list.
 - **Exact match only, always fast.** The fuzzy/regex/mixed search modes are gone —
   they scanned every item with expensive scoring on the main thread and could
-  freeze typing on a big history. Exact search stays instant even at 50,000 items.
+  freeze typing on a big history. Exact search stays instant even at 100,000 items.
 
 ## Mask — screen-share your clipboard safely
 
@@ -87,7 +87,7 @@ action in a bottom menu. This fork fixes all of that.
 - **Whitespace-only copies** (spaces, tabs, newlines) are ignored entirely.
 - **QR code scanner**: select an image item and hit the QR button — the first detected
   code's content is copied as a new clip. *Original: only OCR text extraction.*
-- **10,000 items by default, up to 50,000.** *Original: 200 by default, capped at 999.*
+- **10,000 items by default, up to 100,000.** *Original: 200 by default, capped at 999.*
 - **Hotkey: `⌘` + `` ` ``** *(original: `⇧⌘C`)*.
 
 ## Build
