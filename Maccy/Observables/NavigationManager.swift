@@ -225,6 +225,11 @@ class NavigationManager { // swiftlint:disable:this type_body_length
 
     if let historyItem = history.firstVisibleItem(where: { $0.id == lead }) {
       if let nextItem = history.visibleItem(before: historyItem) {
+        // Top of the bottom pins is a hard stop: never jump up into the
+        // tail of the history list.
+        if Defaults[.pinTo] == .bottom && historyItem.isPinned && nextItem.isUnpinned {
+          return
+        }
         selectFromKeyboardNavigation(item: nextItem)
       } else if history.pasteStack != nil {
         selectWithoutScrolling(item: nil)

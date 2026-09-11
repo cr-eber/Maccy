@@ -318,10 +318,11 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
 
     let navigator = AppState.shared.navigator
 
-    // Up from the first (top) pinned item -> last unpinned item.
+    // Up from the first (top) pinned item is a hard stop -- never jump
+    // into the tail of the history list.
     navigator.select(item: pinB)
     navigator.highlightPrevious()
-    XCTAssertEqual(navigator.leadSelection, one.id)
+    XCTAssertEqual(navigator.leadSelection, pinB.id)
 
     // Up from the top item -> wraps to the last pin.
     navigator.select(item: two)
