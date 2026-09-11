@@ -95,6 +95,17 @@ class SlideoutController {
     }
   }
 
+  // Settings-driven updates: apply the width WITHOUT the write-back to
+  // Defaults. Writing back echoes stale values into the update stream and
+  // makes the settings slider oscillate.
+  func applyContentWidth(_ width: CGFloat) {
+    _contentWidth = max(minimumContentWidth, width).rounded()
+  }
+
+  func applySlideoutWidth(_ width: CGFloat) {
+    _slideoutWidth = max(minimumSlideoutWidth, width).rounded()
+  }
+
   var placement: SlideoutPlacement = .right
   var state: SlideoutState = .closed
   var resizingMode: ResizingMode = .none

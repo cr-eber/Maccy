@@ -66,7 +66,8 @@ action in a bottom menu. This fork fixes all of that.
 - **Popup width slider** (default 450 pt) and **preview width slider** (default
   400 pt) in Appearance settings — no more dragging window edges to get the size
   you want.
-- **Fixed preview width (400pt)** — no more mysteriously shrinking preview pane.
+- **The gear button opens Preferences directly** — no intermediate menu.
+- **Stable preview width** — no more mysteriously shrinking preview pane.
 - **Preview opens instantly** — slide animation removed.
 - **"Pin Preview" setting** (on by default): the preview pane shows automatically every
   time the popup opens.
@@ -75,8 +76,8 @@ action in a bottom menu. This fork fixes all of that.
 
 ## Less clutter, more power
 
-- **Cog menu**: a gear icon next to the search box holds Preferences and Quit; the
-  permanent bottom footer is gone. Clear / Clear all live in Preferences → Storage.
+- **Gear icon next to the search box opens Preferences**; the permanent bottom
+  footer is gone. Clear / Clear all live in Preferences → Storage.
 - **One copy per text**: re-copying the same text from another app replaces the old
   entry and keeps the latest formats. *Original: near-duplicates piled up because
   each app attaches different styling metadata.*

@@ -3,7 +3,6 @@ import SwiftUI
 
 struct HeaderView: View {
   @State private var appState = AppState.shared
-  @State private var settingsMenuShown = false
 
   let controller: SlideoutController
   @FocusState.Binding var searchFocused: Bool
@@ -18,21 +17,11 @@ struct HeaderView: View {
         )
 
         ToolbarButton {
-          settingsMenuShown.toggle()
+          appState.openPreferences()
         } label: {
           Image(systemName: "gearshape")
         }
         .accessibilityLabel(Text(LocalizedStringKey("preferences")))
-        .popover(isPresented: $settingsMenuShown, arrowEdge: .bottom) {
-          // Clearing history lives in Preferences > Storage.
-          VStack(alignment: .leading, spacing: 2) {
-            ForEach(appState.footer.items.filter { ["preferences", "quit"].contains($0.title) }) { item in
-              FooterItemView(item: item)
-            }
-          }
-          .padding(6)
-          .frame(width: 220)
-        }
         .padding(.trailing, 8)
       }
       .opacity(appState.searchVisible ? 1 : 0)

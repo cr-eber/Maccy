@@ -12,11 +12,28 @@ struct AppearanceSettingsPane: View {
   @Default(.previewWidth) private var previewWidth
   @Default(.windowSize) private var windowSize
 
+  // Continuous sliders rounded to 10pt; a step would draw dozens of ticks.
   private var popupWidthBinding: Binding<Double> {
     Binding {
       windowSize.width
     } set: {
-      windowSize.width = $0.rounded()
+      windowSize.width = ($0 / 10).rounded() * 10
+    }
+  }
+
+  private var previewWidthBinding: Binding<Double> {
+    Binding {
+      previewWidth
+    } set: {
+      previewWidth = ($0 / 10).rounded() * 10
+    }
+  }
+
+  private var popupHeightPercentBinding: Binding<Double> {
+    Binding {
+      popupHeightPercent
+    } set: {
+      popupHeightPercent = ($0 / 0.05).rounded() * 0.05
     }
   }
   @Default(.itemGap) private var itemGap
@@ -126,7 +143,7 @@ struct AppearanceSettingsPane: View {
 
       Settings.Section(label: { Text("PopupHeight", tableName: "AppearanceSettings") }) {
         HStack {
-          Slider(value: $popupHeightPercent, in: 0.2...1.0, step: 0.05)
+          Slider(value: popupHeightPercentBinding, in: 0.2...1.0)
             .frame(width: 180)
             .accessibilityLabel(Text("PopupHeight", tableName: "AppearanceSettings"))
           Text(verbatim: "\(Int(round(popupHeightPercent * 100)))%")
@@ -139,7 +156,7 @@ struct AppearanceSettingsPane: View {
 
       Settings.Section(label: { Text("PopupWidth", tableName: "AppearanceSettings") }) {
         HStack {
-          Slider(value: popupWidthBinding, in: 250...800, step: 10)
+          Slider(value: popupWidthBinding, in: 250...800)
             .frame(width: 180)
             .accessibilityLabel(Text("PopupWidth", tableName: "AppearanceSettings"))
           Text(verbatim: "\(Int(windowSize.width)) pt")
@@ -152,7 +169,7 @@ struct AppearanceSettingsPane: View {
 
       Settings.Section(label: { Text("PreviewWidth", tableName: "AppearanceSettings") }) {
         HStack {
-          Slider(value: $previewWidth, in: 200...800, step: 10)
+          Slider(value: previewWidthBinding, in: 200...800)
             .frame(width: 180)
             .accessibilityLabel(Text("PreviewWidth", tableName: "AppearanceSettings"))
           Text(verbatim: "\(Int(previewWidth)) pt")
