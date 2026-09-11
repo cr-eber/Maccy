@@ -258,6 +258,9 @@ class NavigationManager { // swiftlint:disable:this type_body_length
         selectFromKeyboardNavigation(item: nextItem)
       } else if let nextItem = footer.firstVisibleItem {
         selectFromKeyboardNavigation(footerItem: nextItem)
+      } else if Defaults[.pinTo] == .bottom && historyItem.isPinned {
+        // Mirror of the arrow-up wrap: down from the last bottom pin returns to the top.
+        highlightFirst()
       } else if allowCycle {
         highlightFirst()
       }
