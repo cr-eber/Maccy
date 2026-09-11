@@ -306,6 +306,38 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     XCTAssertEqual(history.all.filter(\.isPinned).count, 1)
   }
 
+  func testArrowNavigationAcrossBottomPins() {
+    let one = history.add(historyItem("one"))
+    let two = history.add(historyItem("two"))
+    let pinA = history.add(historyItem("pinA"))
+    history.togglePin(pinA)
+    let pinB = history.add(historyItem("pinB"))
+    history.togglePin(pinB)
+
+    XCTAssertEqual(history.items, [two, one, pinB, pinA])
+
+    let navigator = AppState.shared.navigator
+
+    // Up from the first (top) pinned item -> last unpinned item.
+    navigator.select(item: pinB)
+    navigator.highlightPrevious()
+    XCTAssertEqual(navigator.leadSelection, one.id)
+
+    // Up from the top item -> wraps to the last pin.
+    navigator.select(item: two)
+    navigator.highlightPrevious()
+    XCTAssertEqual(navigator.leadSelection, pinA.id)
+
+    // Down from the last pin -> wraps back to the top item.
+    navigator.highlightNext()
+    XCTAssertEqual(navigator.leadSelection, two.id)
+
+    // Down from the last unpinned item -> first pinned item.
+    navigator.select(item: one)
+    navigator.highlightNext()
+    XCTAssertEqual(navigator.leadSelection, pinB.id)
+  }
+
   func testRemoving() throws {
     let foo = history.add(historyItem("foo"))
     let bar = history.add(historyItem("bar"))
