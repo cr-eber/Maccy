@@ -38,7 +38,7 @@ action in a bottom menu. This fork fixes all of that.
   *Original: littered rows with `⏎` and `⇥` symbols.*
 - **Uniform row heights**, text/images top-aligned — a clean grid instead of jumping rows.
 - **Zebra striping** (alternating backgrounds) + **configurable gap** between items
-  (default 10pt). *Original: an undifferentiated wall of text.*
+  (default 5pt). *Original: an undifferentiated wall of text.*
 - **Full-width rows** — no wasted side margins.
 - **Selection color is configurable**, defaults to a calm light gray instead of the
   loud accent blue; selected text auto-switches black/white for contrast.
@@ -55,16 +55,16 @@ action in a bottom menu. This fork fixes all of that.
 
 ## A window that behaves
 
-- **True light/dark/system theme setting.** Light mode is pure white `#ffffff`
+- **True light/dark/system theme setting** (default: Light). Light mode is pure white `#ffffff`
   with black text. *Original: always a translucent blur showing your wallpaper through.*
 - **Background opacity slider** (default 100% = fully opaque).
 - **Fixed popup height** — searching down to 2 results no longer collapses the window.
-- **Popup height slider** (Appearance settings, default 100%): shrink the popup as a
+- **Popup height slider** (Appearance settings, default 65%): shrink the popup as a
   percentage of the window height — the top edge stays put, only the bottom rises.
-- **Font size slider** (Appearance settings, default 13 pt): one text size for the
+- **Font size slider** (Appearance settings, default 11 pt): one text size for the
   whole popup — list, search, preview. Row heights scale with it.
-- **Popup width slider** (default 450 pt) and **preview width slider** (default
-  400 pt) in Appearance settings — no more dragging window edges to get the size
+- **Popup width slider** (default 350 pt) and **preview width slider** (default
+  260 pt) in Appearance settings — no more dragging window edges to get the size
   you want.
 - **The gear button opens Preferences directly** — no intermediate menu.
 - **Stable preview width** — no more mysteriously shrinking preview pane.
