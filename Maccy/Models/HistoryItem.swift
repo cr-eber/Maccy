@@ -51,7 +51,7 @@ class HistoryItem {
   @MainActor
   static var randomAvailablePin: String { availablePins.randomElement() ?? "" }
 
-  private static let transientTypes: [String] = [
+  static let transientTypes: [String] = [
     NSPasteboard.PasteboardType.modified.rawValue,
     NSPasteboard.PasteboardType.fromMaccy.rawValue,
     NSPasteboard.PasteboardType.linkPresentationMetadata.rawValue,

@@ -488,13 +488,44 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
 
   @MainActor
   private func findSimilarItem(_ item: HistoryItem) -> HistoryItem? {
-    if let duplicate = all.first(where: {
-      $0.item != item && ($0.item.supersedes(item) || Self.samePlainText($0.item, item))
+    if let duplicate = duplicateCandidates(for: item).first(where: {
+      $0 != item && ($0.supersedes(item) || Self.samePlainText($0, item))
     }) {
-      return duplicate.item
+      return duplicate
     }
 
     return isModified(item)
+  }
+
+  // Scanning `all` for a duplicate faults every stored item's contents,
+  // which is too slow with tens of thousands of items. Instead ask the
+  // store for content rows whose bytes match the fresh copy and verify
+  // only those few candidate items.
+  @MainActor
+  private func duplicateCandidates(for item: HistoryItem) -> [HistoryItem] {
+    let type: String
+    let value: Data?
+    if let text = item.text, !text.isEmpty {
+      type = NSPasteboard.PasteboardType.string.rawValue
+      value = text.data(using: .utf8)
+    } else if let content = item.contents.first(where: {
+      !HistoryItem.transientTypes.contains($0.type) && $0.value != nil
+    }) {
+      type = content.type
+      value = content.value
+    } else {
+      return []
+    }
+
+    let descriptor = FetchDescriptor<HistoryItemContent>(
+      predicate: #Predicate { $0.type == type && $0.value == value }
+    )
+    guard let contents = try? Storage.shared.context.fetch(descriptor) else {
+      return []
+    }
+
+    var seen = Set<PersistentIdentifier>()
+    return contents.compactMap(\.item).filter { seen.insert($0.persistentModelID).inserted }
   }
 
   // Items with identical plain text are duplicates even when their other

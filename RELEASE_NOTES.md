@@ -16,6 +16,9 @@ action in a bottom menu. This fork fixes all of that.
 - **Text search means text.** Image items are excluded from search results.
   *Original: searching a word surfaced screenshots that happened to contain it via OCR.*
 - **The preview highlights every match** of the search query too, not just the list.
+- **Exact match only, always fast.** The fuzzy/regex/mixed search modes are gone —
+  they scanned every item with expensive scoring on the main thread and could
+  freeze typing on a big history. Exact search stays instant even at 50,000 items.
 
 ## Mask — screen-share your clipboard safely
 
@@ -70,6 +73,9 @@ action in a bottom menu. This fork fixes all of that.
 - **One copy per text**: re-copying the same text from another app replaces the old
   entry and keeps the latest formats. *Original: near-duplicates piled up because
   each app attaches different styling metadata.*
+- **Duplicate lookup at database speed**: finding the old copy is a single targeted
+  database query instead of walking every stored item, so copying stays instant
+  even with tens of thousands of items.
 - **Whitespace-only copies** (spaces, tabs, newlines) are ignored entirely.
 - **QR code scanner**: select an image item and hit the QR button — the first detected
   code's content is copied as a new clip. *Original: only OCR text extraction.*
