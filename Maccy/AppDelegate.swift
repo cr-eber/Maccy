@@ -47,6 +47,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     #endif
 
+    // Always use thin overlay scrollbars, even when the system-wide
+    // "Show scroll bars" setting (or a connected mouse) selects the
+    // thick legacy style. The app-domain default beats the global one.
+    UserDefaults.standard.set("WhenScrolling", forKey: "AppleShowScrollBars")
+
     // Bridge FloatingPanel via AppDelegate.
     AppState.shared.appDelegate = self
 
