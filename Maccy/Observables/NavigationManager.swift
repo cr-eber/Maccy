@@ -1,3 +1,4 @@
+import Defaults
 import Foundation
 import SwiftUI
 
@@ -227,6 +228,11 @@ class NavigationManager { // swiftlint:disable:this type_body_length
         selectFromKeyboardNavigation(item: nextItem)
       } else if history.pasteStack != nil {
         selectWithoutScrolling(item: nil)
+      } else if Defaults[.pinTo] == .bottom,
+                let lastItem = history.lastVisibleItem,
+                lastItem.isPinned {
+        // Pins live below the history list; wrap from the top item to the last pin.
+        selectFromKeyboardNavigation(item: lastItem)
       } else {
         highlightFirst()
       }
