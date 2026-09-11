@@ -7,6 +7,9 @@
 "Size" = "Size:";
 "SizeTooltip" = "Number of history items to keep.\nDefault: 200.";
 "CurrentSizeTooltip" = "Current size on disk.";
+"MaxVisibleItems" = "Show at most:";
+"MaxVisibleItemsTooltip" = "Number of recent items shown in the popup.\nDefault: 1000.";
+"MaxVisibleItemsDescription" = "Search always covers the entire history; only the list is capped.";
 "SortBy" = "Sort by:";
 "ClearHistory" = "Clear history:";
 "LastCopiedAt" = "Time of last copy";

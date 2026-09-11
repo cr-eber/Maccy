@@ -339,6 +339,23 @@ class HistoryTests: XCTestCase { // swiftlint:disable:this type_body_length
     XCTAssertEqual(navigator.leadSelection, pinB.id)
   }
 
+  func testVisibleItemsCappedButPinsKept() {
+    let savedLimit = Defaults[.maxVisibleItems]
+    defer { Defaults[.maxVisibleItems] = savedLimit }
+    Defaults[.maxVisibleItems] = 3
+
+    let pin = history.add(historyItem("pin"))
+    history.togglePin(pin)
+    for index in 0..<5 {
+      history.add(historyItem("item\(index)"))
+    }
+
+    XCTAssertEqual(history.all.count, 6)
+    XCTAssertEqual(history.items.count, 4)
+    XCTAssertEqual(history.items.filter(\.isUnpinned).count, 3)
+    XCTAssertTrue(history.items.contains(pin))
+  }
+
   func testRemoving() throws {
     let foo = history.add(historyItem("foo"))
     let bar = history.add(historyItem("bar"))

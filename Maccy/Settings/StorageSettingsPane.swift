@@ -57,6 +57,7 @@ struct StorageSettingsPane: View {
   }
 
   @Default(.size) private var size
+  @Default(.maxVisibleItems) private var maxVisibleItems
   @Default(.sortBy) private var sortBy
 
   @State private var viewModel = ViewModel()
@@ -111,6 +112,21 @@ struct StorageSettingsPane: View {
               storageSize = Storage.shared.size
             }
         }
+      }
+
+      Settings.Section(label: { Text("MaxVisibleItems", tableName: "StorageSettings") }) {
+        HStack {
+          TextField("", value: $maxVisibleItems, formatter: sizeFormatter)
+            .frame(width: 80)
+            .help(Text("MaxVisibleItemsTooltip", tableName: "StorageSettings"))
+            .accessibilityLabel(Text("MaxVisibleItems", tableName: "StorageSettings"))
+          Stepper("", value: $maxVisibleItems, in: 1...100_000, step: 100)
+            .labelsHidden()
+            .accessibilityLabel(Text("MaxVisibleItems", tableName: "StorageSettings"))
+        }
+        Text("MaxVisibleItemsDescription", tableName: "StorageSettings")
+          .controlSize(.small)
+          .foregroundStyle(.gray)
       }
 
       Settings.Section(label: { Text("SortBy", tableName: "StorageSettings") }) {

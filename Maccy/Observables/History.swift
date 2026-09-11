@@ -24,7 +24,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       throttler.throttle { [self] in
         // Text search should never surface image items.
         let searchScope = searchQuery.isEmpty ? all : all.filter { !$0.hasImage }
-        updateItems(search.search(string: searchQuery, within: searchScope))
+        updateItems(visibleLimit(search.search(string: searchQuery, within: searchScope), isPinned: \.object.isPinned))
 
         if searchQuery.isEmpty {
           AppState.shared.navigator.select(item: unpinnedItems.first)
@@ -101,6 +101,35 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
         }
       }
     }
+
+    Task {
+      for await _ in Defaults.updates(.maxVisibleItems, initial: false) {
+        items = visibleLimit(all, isPinned: \.isPinned)
+        updateUnpinnedShortcuts()
+        AppState.shared.popup.needsResize = true
+      }
+    }
+  }
+
+  // The popup only ever shows the newest `maxVisibleItems` unpinned items;
+  // pinned items always stay. Search still scans the full history — only
+  // what gets displayed is capped.
+  private func visibleLimit<T>(_ elements: [T], isPinned: (T) -> Bool) -> [T] {
+    let limit = Defaults[.maxVisibleItems]
+    guard limit > 0 else { return elements }
+
+    var unpinnedCount = 0
+    var limited: [T] = []
+    limited.reserveCapacity(min(elements.count, limit))
+    for element in elements {
+      if isPinned(element) {
+        limited.append(element)
+      } else if unpinnedCount < limit {
+        unpinnedCount += 1
+        limited.append(element)
+      }
+    }
+    return limited
   }
 
   @MainActor
@@ -108,7 +137,9 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     let descriptor = FetchDescriptor<HistoryItem>()
     let results = try Storage.shared.context.fetch(descriptor)
     all = sorter.sort(results).map { HistoryItemDecorator($0) }
-    items = all
+    items = visibleLimit(all, isPinned: \.isPinned)
+
+    markImageItems()
 
     // Heal titles stored with special symbols (⏎/⇥) after the
     // showSpecialSymbols default changed.
@@ -124,6 +155,26 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     // Ensure that panel size is proper *after* loading all items.
     Task {
       AppState.shared.popup.needsResize = true
+    }
+  }
+
+  // Resolve which items hold images with one query instead of faulting
+  // every item's contents relationship — the search filter checks
+  // `hasImage` across the whole history on each keystroke.
+  @MainActor
+  private func markImageItems() {
+    let imageTypes = StorageType.images.types.map(\.rawValue)
+    var descriptor = FetchDescriptor<HistoryItem>(
+      predicate: #Predicate { item in
+        item.contents.contains { imageTypes.contains($0.type) }
+      }
+    )
+    descriptor.propertiesToFetch = []
+    let imageItemIDs = Set(
+      ((try? Storage.shared.context.fetch(descriptor)) ?? []).map(\.persistentModelID)
+    )
+    for decorator in all {
+      decorator.hasImageHint = imageItemIDs.contains(decorator.item.persistentModelID)
     }
   }
 
@@ -205,10 +256,14 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
         all.insert(itemDecorator, at: index)
       }
 
-      items = all
+      items = visibleLimit(all, isPinned: \.isPinned)
       updateUnpinnedShortcuts()
       AppState.shared.popup.needsResize = true
     }
+
+    // The fresh copy's contents are in memory; resolving the image flag now
+    // keeps searches from ever faulting this item.
+    itemDecorator.hasImageHint = itemDecorator.item.image != nil
 
     return itemDecorator
   }
@@ -236,7 +291,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       }
       all.removeAll(where: \.isUnpinned)
       sessionLog.removeValues { $0.pin == nil }
-      items = all
+      items = visibleLimit(all, isPinned: \.isPinned)
 
       try? Storage.shared.context.transaction {
         try? Storage.shared.context.delete(
@@ -267,7 +322,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       }
       all.removeAll()
       sessionLog.removeAll()
-      items = all
+      items = visibleLimit(all, isPinned: \.isPinned)
 
       do {
         let context = Storage.shared.context
@@ -477,7 +532,7 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
       all.insert(item, at: newIndex)
     }
 
-    items = all
+    items = visibleLimit(all, isPinned: \.isPinned)
 
     searchQuery = ""
     updateUnpinnedShortcuts()

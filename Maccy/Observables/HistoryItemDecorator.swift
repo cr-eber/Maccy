@@ -46,7 +46,12 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     return url.deletingPathExtension().lastPathComponent
   }
 
-  var hasImage: Bool { item.image != nil }
+  // Set in bulk from a single query in History.load(); the fallback of
+  // checking the item directly faults its contents relationship, which is
+  // far too slow to do for every item during a search over a big history.
+  @ObservationIgnored
+  var hasImageHint: Bool?
+  var hasImage: Bool { hasImageHint ?? (item.image != nil) }
 
   var previewImageGenerationTask: Task<(), Error>?
   var thumbnailImageGenerationTask: Task<(), Error>?
