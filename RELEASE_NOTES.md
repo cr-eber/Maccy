@@ -63,6 +63,9 @@ action in a bottom menu. This fork fixes all of that.
   percentage of the window height — the top edge stays put, only the bottom rises.
 - **Font size slider** (Appearance settings, default 13 pt): one text size for the
   whole popup — list, search, preview. Row heights scale with it.
+- **Popup width slider** (default 450 pt) and **preview width slider** (default
+  400 pt) in Appearance settings — no more dragging window edges to get the size
+  you want.
 - **Fixed preview width (400pt)** — no more mysteriously shrinking preview pane.
 - **Preview opens instantly** — slide animation removed.
 - **"Pin Preview" setting** (on by default): the preview pane shows automatically every

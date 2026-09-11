@@ -49,6 +49,21 @@ class AppState: Sendable {
       })
     preview.contentWidth = Defaults[.windowSize].width
     preview.slideoutWidth = Defaults[.previewWidth]
+
+    // Keep the live panes in sync with the width settings. The guards stop
+    // the write-back from the pane setters re-triggering these observers.
+    Task { @MainActor [weak preview] in
+      for await size in Defaults.updates(.windowSize, initial: false) {
+        guard let preview, preview.contentWidth != size.width else { continue }
+        preview.contentWidth = size.width
+      }
+    }
+    Task { @MainActor [weak preview] in
+      for await width in Defaults.updates(.previewWidth, initial: false) {
+        guard let preview, preview.slideoutWidth != width else { continue }
+        preview.slideoutWidth = width
+      }
+    }
   }
 
   @MainActor

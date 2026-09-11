@@ -9,6 +9,16 @@ struct AppearanceSettingsPane: View {
   @Default(.backgroundOpacity) private var backgroundOpacity
   @Default(.fontSize) private var fontSize
   @Default(.popupHeightPercent) private var popupHeightPercent
+  @Default(.previewWidth) private var previewWidth
+  @Default(.windowSize) private var windowSize
+
+  private var popupWidthBinding: Binding<Double> {
+    Binding {
+      windowSize.width
+    } set: {
+      windowSize.width = $0.rounded()
+    }
+  }
   @Default(.itemGap) private var itemGap
   @Default(.maskPrefixLength) private var maskPrefixLength
   @Default(.maskSuffixLength) private var maskSuffixLength
@@ -125,6 +135,32 @@ struct AppearanceSettingsPane: View {
             .frame(width: 40, alignment: .leading)
         }
         .help(Text("PopupHeightTooltip", tableName: "AppearanceSettings"))
+      }
+
+      Settings.Section(label: { Text("PopupWidth", tableName: "AppearanceSettings") }) {
+        HStack {
+          Slider(value: popupWidthBinding, in: 250...800, step: 10)
+            .frame(width: 180)
+            .accessibilityLabel(Text("PopupWidth", tableName: "AppearanceSettings"))
+          Text(verbatim: "\(Int(windowSize.width)) pt")
+            .controlSize(.small)
+            .foregroundStyle(.gray)
+            .frame(width: 50, alignment: .leading)
+        }
+        .help(Text("PopupWidthTooltip", tableName: "AppearanceSettings"))
+      }
+
+      Settings.Section(label: { Text("PreviewWidth", tableName: "AppearanceSettings") }) {
+        HStack {
+          Slider(value: $previewWidth, in: 200...800, step: 10)
+            .frame(width: 180)
+            .accessibilityLabel(Text("PreviewWidth", tableName: "AppearanceSettings"))
+          Text(verbatim: "\(Int(previewWidth)) pt")
+            .controlSize(.small)
+            .foregroundStyle(.gray)
+            .frame(width: 50, alignment: .leading)
+        }
+        .help(Text("PreviewWidthTooltip", tableName: "AppearanceSettings"))
       }
 
       Settings.Section(label: { Text("MaxItemLines", tableName: "AppearanceSettings") }) {

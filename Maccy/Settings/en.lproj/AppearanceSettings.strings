@@ -10,6 +10,10 @@
 "FontSizeTooltip" = "Text size used across the popup.\nDefault: 13 pt.";
 "PopupHeight" = "Popup height:";
 "PopupHeightTooltip" = "Popup height as a percentage of the window height.\nSmaller values shorten the popup from the bottom; the top edge stays put.\nDefault: 100%.";
+"PopupWidth" = "Popup width:";
+"PopupWidthTooltip" = "Width of the popup list in points (the preview pane comes on top of this).\nDefault: 450 pt.";
+"PreviewWidth" = "Preview width:";
+"PreviewWidthTooltip" = "Width of the preview pane in points.\nDefault: 400 pt.";
 "MaxItemLines" = "Lines per item:";
 "MaxItemLinesTooltip" = "Maximum number of text rows shown per history item.\nDefault: 3.";
 "ItemGap" = "Gap between items:";
