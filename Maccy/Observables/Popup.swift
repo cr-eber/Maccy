@@ -31,16 +31,39 @@ class Popup {
     4
   }
 
-  static let itemHeight: CGFloat = if #available(macOS 26.0, *) {
+  // Row height for the default 13pt font (22pt; 24 on macOS 26). Rows keep
+  // this padding and grow or shrink with the configured font size.
+  private static let defaultItemHeight: CGFloat = if #available(macOS 26.0, *) {
     24
   } else {
     22
   }
 
-  static let itemLineHeight: CGFloat = {
-    let font = NSFont.preferredFont(forTextStyle: .body)
-    return NSLayoutManager().defaultLineHeight(for: font).rounded(.up)
-  }()
+  private static var lineHeightCache: [Double: CGFloat] = [:]
+
+  private static func lineHeight(ofSize size: Double) -> CGFloat {
+    if let cached = lineHeightCache[size] { return cached }
+    let height = NSLayoutManager()
+      .defaultLineHeight(for: NSFont.systemFont(ofSize: size))
+      .rounded(.up)
+    lineHeightCache[size] = height
+    return height
+  }
+
+  static var itemHeight: CGFloat {
+    defaultItemHeight - lineHeight(ofSize: 13) + itemLineHeight
+  }
+
+  static var itemLineHeight: CGFloat {
+    lineHeight(ofSize: Defaults[.fontSize])
+  }
+
+  // Height the popup opens at: the stored window height scaled by the
+  // configured percentage. All top-anchored popup positions keep the top
+  // edge in place, so a smaller percentage only raises the bottom edge.
+  static var configuredHeight: CGFloat {
+    Defaults[.windowSize].height * Defaults[.popupHeightPercent]
+  }
 
   // Inset that vertically centers a single text line within itemHeight.
   static var itemVerticalInset: CGFloat {
@@ -94,7 +117,7 @@ class Popup {
 
   func open(height: CGFloat, at popupPosition: PopupPosition = Defaults[.popupPosition]) {
     // The popup always opens at its configured maximum height.
-    AppState.shared.appDelegate?.panel.open(height: Defaults[.windowSize].height, at: popupPosition)
+    AppState.shared.appDelegate?.panel.open(height: Popup.configuredHeight, at: popupPosition)
   }
 
   func reset() {
@@ -113,7 +136,7 @@ class Popup {
   func preferredHeight(for newHeight: CGFloat) -> CGFloat {
     // Keep the popup at its configured maximum height instead of
     // collapsing to fit the (possibly filtered) list content.
-    return Defaults[.windowSize].height
+    return Popup.configuredHeight
   }
 
   private func suitableHeight(for historyListHeight: CGFloat) -> CGFloat {

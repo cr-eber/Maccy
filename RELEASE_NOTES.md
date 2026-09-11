@@ -59,6 +59,10 @@ action in a bottom menu. This fork fixes all of that.
   with black text. *Original: always a translucent blur showing your wallpaper through.*
 - **Background opacity slider** (default 100% = fully opaque).
 - **Fixed popup height** — searching down to 2 results no longer collapses the window.
+- **Popup height slider** (Appearance settings, default 100%): shrink the popup as a
+  percentage of the window height — the top edge stays put, only the bottom rises.
+- **Font size slider** (Appearance settings, default 13 pt): one text size for the
+  whole popup — list, search, preview. Row heights scale with it.
 - **Fixed preview width (400pt)** — no more mysteriously shrinking preview pane.
 - **Preview opens instantly** — slide animation removed.
 - **"Pin Preview" setting** (on by default): the preview pane shows automatically every

@@ -6,6 +6,10 @@
 "AppearanceModeTooltip" = "Force light or dark appearance, or follow the system setting.\nDefault: System.";
 "BackgroundOpacity" = "Background opacity:";
 "BackgroundOpacityTooltip" = "Opacity of the popup background.\nDefault: 100%.";
+"FontSize" = "Font size:";
+"FontSizeTooltip" = "Text size used across the popup.\nDefault: 13 pt.";
+"PopupHeight" = "Popup height:";
+"PopupHeightTooltip" = "Popup height as a percentage of the window height.\nSmaller values shorten the popup from the bottom; the top edge stays put.\nDefault: 100%.";
 "MaxItemLines" = "Lines per item:";
 "MaxItemLinesTooltip" = "Maximum number of text rows shown per history item.\nDefault: 3.";
 "ItemGap" = "Gap between items:";

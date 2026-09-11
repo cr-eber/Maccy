@@ -251,9 +251,9 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
         let upper = attributed.characters.index(attributed.startIndex, offsetBy: upperOffset)
         switch Defaults[.highlightMatch] {
         case .bold:
-          attributed[lower..<upper].font = .bold(.body)()
+          attributed[lower..<upper].font = .system(size: Defaults[.fontSize]).bold()
         case .italic:
-          attributed[lower..<upper].font = .italic(.body)()
+          attributed[lower..<upper].font = .system(size: Defaults[.fontSize]).italic()
         case .underline:
           attributed[lower..<upper].underlineStyle = .single
         case .coloredText:
@@ -337,9 +337,9 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
 
       switch Defaults[.highlightMatch] {
       case .bold:
-        attributedString[lowerBound..<upperBound].font = .bold(.body)()
+        attributedString[lowerBound..<upperBound].font = .system(size: Defaults[.fontSize]).bold()
       case .italic:
-        attributedString[lowerBound..<upperBound].font = .italic(.body)()
+        attributedString[lowerBound..<upperBound].font = .system(size: Defaults[.fontSize]).italic()
       case .underline:
         attributedString[lowerBound..<upperBound].underlineStyle = .single
       case .coloredText:

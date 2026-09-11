@@ -8,6 +8,7 @@ struct ContentView: View {
   @State private var scenePhase: ScenePhase = .background
 
   @Default(.backgroundOpacity) private var backgroundOpacity
+  @Default(.fontSize) private var fontSize
 
   @Environment(\.colorScheme) private var colorScheme
 
@@ -72,6 +73,8 @@ struct ContentView: View {
       }
     }
     .animation(.easeInOut(duration: 0.2), value: appState.searchVisible)
+    // One configurable text size for everything inside the popup.
+    .font(.system(size: fontSize))
     .environment(appState)
     .environment(modifierFlags)
     .environment(\.scenePhase, scenePhase)

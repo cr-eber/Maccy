@@ -7,6 +7,8 @@ import SwiftHEXColors
 struct AppearanceSettingsPane: View {
   @Default(.appearanceMode) private var appearanceMode
   @Default(.backgroundOpacity) private var backgroundOpacity
+  @Default(.fontSize) private var fontSize
+  @Default(.popupHeightPercent) private var popupHeightPercent
   @Default(.itemGap) private var itemGap
   @Default(.maskPrefixLength) private var maskPrefixLength
   @Default(.maskSuffixLength) private var maskSuffixLength
@@ -97,6 +99,32 @@ struct AppearanceSettingsPane: View {
             .frame(width: 40, alignment: .leading)
         }
         .help(Text("BackgroundOpacityTooltip", tableName: "AppearanceSettings"))
+      }
+
+      Settings.Section(label: { Text("FontSize", tableName: "AppearanceSettings") }) {
+        HStack {
+          Slider(value: $fontSize, in: 10...24, step: 1)
+            .frame(width: 180)
+            .accessibilityLabel(Text("FontSize", tableName: "AppearanceSettings"))
+          Text(verbatim: "\(Int(fontSize)) pt")
+            .controlSize(.small)
+            .foregroundStyle(.gray)
+            .frame(width: 40, alignment: .leading)
+        }
+        .help(Text("FontSizeTooltip", tableName: "AppearanceSettings"))
+      }
+
+      Settings.Section(label: { Text("PopupHeight", tableName: "AppearanceSettings") }) {
+        HStack {
+          Slider(value: $popupHeightPercent, in: 0.2...1.0, step: 0.05)
+            .frame(width: 180)
+            .accessibilityLabel(Text("PopupHeight", tableName: "AppearanceSettings"))
+          Text(verbatim: "\(Int(round(popupHeightPercent * 100)))%")
+            .controlSize(.small)
+            .foregroundStyle(.gray)
+            .frame(width: 40, alignment: .leading)
+        }
+        .help(Text("PopupHeightTooltip", tableName: "AppearanceSettings"))
       }
 
       Settings.Section(label: { Text("MaxItemLines", tableName: "AppearanceSettings") }) {

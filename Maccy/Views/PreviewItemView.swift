@@ -72,7 +72,6 @@ struct PreviewItemView: View {
                 of: query, in: text, searching: item.isMasked ? realText : nil
               )
             )
-            .font(.body)
             .frame(maxWidth: .infinity, alignment: .leading)
           }
           .frame(maxWidth: .infinity)
@@ -118,7 +117,7 @@ struct LargeTextPreviewView: NSViewRepresentable {
     storage.removeAttribute(.underlineStyle, range: fullRange)
     storage.addAttribute(.foregroundColor, value: NSColor.labelColor, range: fullRange)
     storage.addAttribute(
-      .font, value: NSFont.systemFont(ofSize: NSFont.systemFontSize), range: fullRange
+      .font, value: NSFont.systemFont(ofSize: Defaults[.fontSize]), range: fullRange
     )
 
     guard !query.isEmpty else { return }
@@ -142,11 +141,11 @@ struct LargeTextPreviewView: NSViewRepresentable {
       switch Defaults[.highlightMatch] {
       case .bold:
         storage.addAttribute(
-          .font, value: NSFont.boldSystemFont(ofSize: NSFont.systemFontSize), range: found
+          .font, value: NSFont.boldSystemFont(ofSize: Defaults[.fontSize]), range: found
         )
       case .italic:
         let italic = NSFontManager.shared.convert(
-          NSFont.systemFont(ofSize: NSFont.systemFontSize), toHaveTrait: .italicFontMask
+          NSFont.systemFont(ofSize: Defaults[.fontSize]), toHaveTrait: .italicFontMask
         )
         storage.addAttribute(.font, value: italic, range: found)
       case .underline:
@@ -169,7 +168,7 @@ struct LargeTextPreviewView: NSViewRepresentable {
     textView.isSelectable = false
     textView.isRichText = false
     textView.drawsBackground = false
-    textView.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+    textView.font = NSFont.systemFont(ofSize: Defaults[.fontSize])
     textView.textColor = .labelColor
     textView.textContainerInset = .zero
     textView.minSize = .zero

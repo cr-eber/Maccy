@@ -51,6 +51,9 @@ struct ListItemView<Title: View, ID: Hashable>: View {
   var accessibilityLabel: String = ""
   @ViewBuilder var title: () -> Title
 
+  // Row heights derive from the configured font size; observing it keeps
+  // them in sync when it changes.
+  @Default(.fontSize) private var fontSize
   @Default(.maxItemLines) private var maxItemLines
   @Default(.selectionColor) private var selectionColor
   @Default(.showApplicationIcons) private var showIcons

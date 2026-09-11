@@ -122,7 +122,11 @@ class FloatingPanel<Content: View>: NSPanel, NSWindowDelegate {
   }
 
   func saveWindowFrame(frame: NSRect) {
-    Defaults[.windowSize] = frame.size
+    var size = frame.size
+    // The popup opens at the stored height scaled by popupHeightPercent;
+    // store the unscaled height so the dragged size is reproduced exactly.
+    size.height /= Defaults[.popupHeightPercent]
+    Defaults[.windowSize] = size
     saveWindowPosition()
   }
 

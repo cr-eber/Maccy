@@ -127,8 +127,8 @@ class HistoryItemDecoratorTests: XCTestCase {
       range(from: 8, to: 10, in: itemDecorator)
     ])
     var expectedTitle = AttributedString("foo bar baz")
-    expectedTitle[expectedTitle.range(of: "oo")!].font = .bold(.body)()
-    expectedTitle[expectedTitle.range(of: "baz")!].font = .bold(.body)()
+    expectedTitle[expectedTitle.range(of: "oo")!].font = .system(size: Defaults[.fontSize]).bold()
+    expectedTitle[expectedTitle.range(of: "baz")!].font = .system(size: Defaults[.fontSize]).bold()
     XCTAssertEqual(itemDecorator.attributedTitle, expectedTitle)
     itemDecorator.highlight("", [])
     XCTAssertEqual(itemDecorator.attributedTitle, nil)
@@ -147,7 +147,7 @@ class HistoryItemDecoratorTests: XCTestCase {
     XCTAssertTrue(visibleText.contains("needle"))
 
     let matchRange = attributedTitle.range(of: "needle")!
-    XCTAssertEqual(attributedTitle[matchRange].font, .bold(.body)())
+    XCTAssertEqual(attributedTitle[matchRange].font, .system(size: Defaults[.fontSize]).bold())
   }
 
   func testMask() {
