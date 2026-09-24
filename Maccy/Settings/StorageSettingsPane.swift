@@ -72,6 +72,13 @@ struct StorageSettingsPane: View {
     return formatter
   }()
 
+  private let maxVisibleItemsFormatter: NumberFormatter = {
+    let formatter = NumberFormatter()
+    formatter.minimum = 1
+    formatter.maximum = NSNumber(value: History.maxVisibleItemsLimit)
+    return formatter
+  }()
+
   var body: some View {
     Settings.Container(contentWidth: 450) {
       Settings.Section(
@@ -116,11 +123,11 @@ struct StorageSettingsPane: View {
 
       Settings.Section(label: { Text("MaxVisibleItems", tableName: "StorageSettings") }) {
         HStack {
-          TextField("", value: $maxVisibleItems, formatter: sizeFormatter)
+          TextField("", value: $maxVisibleItems, formatter: maxVisibleItemsFormatter)
             .frame(width: 80)
             .help(Text("MaxVisibleItemsTooltip", tableName: "StorageSettings"))
             .accessibilityLabel(Text("MaxVisibleItems", tableName: "StorageSettings"))
-          Stepper("", value: $maxVisibleItems, in: 1...100_000, step: 100)
+          Stepper("", value: $maxVisibleItems, in: 1...History.maxVisibleItemsLimit, step: 50)
             .labelsHidden()
             .accessibilityLabel(Text("MaxVisibleItems", tableName: "StorageSettings"))
         }

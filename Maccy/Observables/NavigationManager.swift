@@ -80,6 +80,9 @@ class NavigationManager { // swiftlint:disable:this type_body_length
   var isFirstItemHighlighted: Bool { history.firstVisibleItem == leadHistoryItem }
 
   private func scroll(to id: UUID?, item: HistoryItemDecorator? = nil) {
+    // Pinned rows render outside the scroll view; asking the lazy list to
+    // scroll to an id it doesn't contain forces it to lay out every row.
+    guard item?.isPinned != true else { return }
     scrollTarget = id
   }
 
@@ -116,7 +119,7 @@ class NavigationManager { // swiftlint:disable:this type_body_length
     withTransaction(Transaction()) {
       selection = newSelectionState
       leadHistoryItem = item
-      scrollTarget = leadSelection
+      scroll(to: item.id, item: item)
     }
   }
 
@@ -146,7 +149,7 @@ class NavigationManager { // swiftlint:disable:this type_body_length
     withTransaction(Transaction()) {
       selection = newSelectionState
       leadHistoryItem = toItem
-      scrollTarget = leadSelection
+      scroll(to: toItem.id, item: toItem)
     }
   }
 

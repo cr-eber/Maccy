@@ -111,11 +111,15 @@ class History: ItemsContainer { // swiftlint:disable:this type_body_length
     }
   }
 
+  // Hard ceiling for maxVisibleItems: rendering more rows makes list
+  // layout (and scrollTo) noticeably laggy.
+  static let maxVisibleItemsLimit = 500
+
   // The popup only ever shows the newest `maxVisibleItems` unpinned items;
   // pinned items always stay. Search still scans the full history — only
   // what gets displayed is capped.
   private func visibleLimit<T>(_ elements: [T], isPinned: (T) -> Bool) -> [T] {
-    let limit = Defaults[.maxVisibleItems]
+    let limit = min(Defaults[.maxVisibleItems], Self.maxVisibleItemsLimit)
     guard limit > 0 else { return elements }
 
     var unpinnedCount = 0
