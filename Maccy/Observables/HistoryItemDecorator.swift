@@ -32,7 +32,23 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
   }
   var shortcuts: [KeyShortcut] = []
 
+  // Cached on first access: reading it faults the item's SwiftData
+  // contents relationship, which is slow on render paths and crashes
+  // outright when a stale row re-renders after its model was deleted
+  // (e.g. removed by the duplicate merge in History.add).
+  @ObservationIgnored
+  private var cachedApplication: String??
   var application: String? {
+    if let cached = cachedApplication {
+      return cached
+    }
+
+    let application = resolveApplication()
+    cachedApplication = .some(application)
+    return application
+  }
+
+  private func resolveApplication() -> String? {
     if item.universalClipboard {
       return "iCloud"
     }
@@ -85,12 +101,29 @@ class HistoryItemDecorator: Identifiable, Hashable, HasVisibility {
     return selectionIndex
   }
   
+  // Same caching rationale as `application`: `item.image` faults the
+  // contents relationship, which must not happen on every row render.
+  @ObservationIgnored
+  private var cachedImageAccessibilityText: String??
+  private var imageAccessibilityText: String? {
+    if let cached = cachedImageAccessibilityText {
+      return cached
+    }
+
+    var text: String?
+    if hasImage, let image = item.image {
+      let size = image.pixelSize
+      text = String(format: NSLocalizedString("history_item_image_accessibility_label_no_app", comment: ""), Int(size.width), Int(size.height))
+    }
+    cachedImageAccessibilityText = .some(text)
+    return text
+  }
+
   // Describe the complete item independently of its potentially truncated visual content.
   var accessibilityLabel: String {
     var parts: [String] = []
-    if hasImage, let image = item.image {
-      let size = image.pixelSize
-      parts.append(String(format: NSLocalizedString("history_item_image_accessibility_label_no_app", comment: ""), Int(size.width), Int(size.height)))
+    if let imageText = imageAccessibilityText {
+      parts.append(imageText)
     } else {
       parts.append(displayTitle)
     }
